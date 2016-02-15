@@ -8,7 +8,7 @@ Small JavaScript library installing tab and floating window to show external ser
 
 ### What you should do
 
-* Get install.js from this library
+* Get injector.js from this library
 * Adjust it for you needs: at least specify SaaS URL which should be used
 * Host modified JS on you SaaS
 * Provide your users with information how to install
