@@ -1,0 +1,10 @@
+# Site settings
+title: Service-Injector
+email: phantom@ydn.ru
+description: JS library for bringing your SaaS on different sites
+exclude: ['CNAME', 'Gemfile', 'Gemfile.lock']
+highlighter: pygments
+permalink: pretty
+
+# Build settings
+markdown: kramdown

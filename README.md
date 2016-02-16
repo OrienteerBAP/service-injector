@@ -33,7 +33,7 @@ Set of parameters which can be populated from client side
 | p | position | Position of a tab: left, right, top, botton |
 | o | offset | Offset of a tab position. Can be in % or px |
 | a  | animation | Type of animation to be used |
-| ww | window width | Initial width of a window. Can be % or px | 
+| ww | window width | Initial width of a window. Can be % or px |
 | wh | window height | Initial height of a window. Can be % or px |
 | wt | window top | Inital top position |
 | wb | window bottom | Inital bottom window position |
@@ -42,6 +42,7 @@ Set of parameters which can be populated from client side
 | wr | window right | Initial right window position |
 | d | draggable | Is window draggable |
 | r | resizable | Is window resizable |
+| ht | hide tab | Hide tab when window is shown | 
 
 ### Service side
 
