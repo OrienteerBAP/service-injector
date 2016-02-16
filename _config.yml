@@ -3,8 +3,10 @@ title: Service-Injector
 email: phantom@ydn.ru
 description: JS library for bringing your SaaS on different sites
 exclude: ['CNAME', 'Gemfile', 'Gemfile.lock']
-highlighter: pygments
+highlighter: rouge
 permalink: pretty
+url: "http://orienteerdw.github.io/"
+baseurl: "/service-injector"
 
 # Build settings
 markdown: kramdown

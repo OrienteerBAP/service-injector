@@ -1,7 +1,7 @@
 !function() {
   /*Server side config*/
   var prefix = "si"; //Usefull to support several injections per page
-  var tabTemplate = sp("<a onclick='%prefix%ToggleWindow()'>Click me!</a>");
+  var tabTemplate = sp("<a onclick='%prefix%ToggleWindow(); return false;' href='#'>Click me!</a>");
   var windowTemplate = sp("<div id='%prefix%-header'>Header</div>"+
                           "<div id='%prefix%-body'>Body</div>"+
                           "<div id='%prefix%-footer'>Footer</div>");
@@ -87,7 +87,7 @@
         winElm.style.display = 'none';
         document.getElementById(sp('%prefix%-tab')).style.display = 'block';
       }
-
+      return false;
     }
   };
 
