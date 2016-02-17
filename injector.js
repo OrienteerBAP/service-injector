@@ -1,12 +1,14 @@
 !function() {
   /*Server side config*/
   var prefix = "si"; //Usefull to support several injections per page
+  var siScriptId = "service-injector"; //Id of SCRIPT element which has in src this script
   var tabTemplate = sp("<a onclick='%prefix%ToggleWindow(); return false;' href='#'>Click me!</a>");
-  var windowTemplate = sp("<div id='%prefix%-header'>Header</div>"+
+  var windowTemplate = sp("<div id='%prefix%-header'><a href='#' onclick='%prefix%ToggleWindow(); return false;'>X</a></div>"+
                           "<div id='%prefix%-body'>Body</div>"+
                           "<div id='%prefix%-footer'>Footer</div>");
   var injectorStyles = sp("#%prefix%-tab {background: white; border: 1px solid black; padding: 1em}"+
-                          "#%prefix%-window {background: white; border: 1px solid black; padding: 1em}");
+                          "#%prefix%-window {background: white; border: 1px solid black;}"+
+                          "#%prefix%-header {height:1.5em; background: #aaa; text-align: right; padding: 0 .5em;}");
 
   var clientConfig = {
     p : "bottom",
