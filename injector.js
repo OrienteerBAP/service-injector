@@ -3,12 +3,12 @@
   var prefix = "si"; //Usefull to support several injections per page
   var siScriptId = "service-injector"; //Id of SCRIPT element which has in src this script
   var tabTemplate = sp("<a onclick='%prefix%ToggleWindow(); return false;' href='#'>Click me!</a>");
-  var windowTemplate = sp("<div id='%prefix%-header'><a href='#' onclick='%prefix%ToggleWindow(); return false;'>X</a></div>"+
+  var windowTemplate = sp("<div id='%prefix%-header'><a href='#' onclick='%prefix%ToggleWindow(); return false;' style='cursor:pointer'>X</a></div>"+
                           "<div id='%prefix%-body'>Body</div>"+
                           "<div id='%prefix%-footer'>Footer</div>");
   var injectorStyles = sp("#%prefix%-tab {background: white; border: 1px solid black; padding: 1em}"+
                           "#%prefix%-window {background: white; border: 1px solid black;}"+
-                          "#%prefix%-header {height:1.5em; background: #aaa; text-align: right; padding: 0 .5em;}");
+                          "#%prefix%-header {height:1.5em; background: #aaa; text-align: right; padding: 0 .5em;cursor:move}");
 
   var clientConfig = {
     p : "bottom",
@@ -75,7 +75,37 @@
         winElm.style.left = ((screen.width - winElm.offsetWidth+conf.wc) / 2)+"px";
         winElm.style.display = 'none';
       }
+      if(conf.d) injector.initDraggable();
       injector.exp();
+    },
+    initDraggable : function () {
+      var header = document.getElementById(sp("%prefix%-header"));
+      if(header) {
+        var drag = {
+          win: null,
+          top: 0,
+          left: 0,
+          x: 0,
+          y: 0
+        };
+        header.addEventListener("mousedown", function(e){
+          drag.win = document.getElementById(sp("%prefix%-window"));
+          drag.top = drag.y - drag.win.offsetTop;
+          drag.left = drag.x - drag.win.offsetLeft;
+          e.stopPropagation();
+        });
+        document.addEventListener("mousemove", function(e){
+          drag.x = document.all ? window.event.clientX : e.pageX;
+          drag.y = document.all ? window.event.clientY : e.pageY;
+          if(drag.win) {
+            drag.win.style.left = (drag.x - drag.left)+"px";
+            drag.win.style.top = (drag.y - drag.top)+"px";
+          }
+        });
+        document.addEventListener("mouseup", function(e) {
+          drag.win = null;
+        });
+      }
     },
     exp : function () {
       window[sp("%prefix%ToggleWindow")] = injector.toggleWindow;
