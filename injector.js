@@ -3,12 +3,18 @@
   var prefix = "si"; //Usefull to support several injections per page
   var siScriptId = "service-injector"; //Id of SCRIPT element which has in src this script
   var tabTemplate = sp("<a onclick='%prefix%ToggleWindow(); return false;' href='#'>Click me!</a>");
-  var windowTemplate = sp("<div id='%prefix%-header'><a href='#' onclick='%prefix%ToggleWindow(); return false;' style='cursor:pointer'>X</a></div>"+
+  var windowTemplate = sp("<div id='%prefix%-inner'>"+
+                          "<div id='%prefix%-header'><a href='#' onclick='%prefix%ToggleWindow(); return false;' style='cursor:pointer'>X</a></div>"+
                           "<div id='%prefix%-body'>Body</div>"+
-                          "<div id='%prefix%-footer'>Footer</div>");
+                          "<div id='%prefix%-footer'><div id='%prefix%-resizer'></div></div>"+
+                          "</div>");
   var injectorStyles = sp("#%prefix%-tab {background: white; border: 1px solid black; padding: 1em}"+
                           "#%prefix%-window {background: white; border: 1px solid black;}"+
-                          "#%prefix%-header {height:1.5em; background: #aaa; text-align: right; padding: 0 .5em;cursor:move}");
+                          "#%prefix%-inner {height: 100%; width: 100%; position: relative}"+
+                          "#%prefix%-header {height:1.5em; background: #aaa; text-align: right; padding: 0 .5em;cursor:move}"+
+                          "#%prefix%-body {border: 1px solid #aaa; bottom: 0}"+
+                          "#%prefix%-footer {position: absolute; bottom: 0; left:0; right:0}"+
+                          "#%prefix%-resizer {width: 20px; height: 20px; float:right; position: relative; right: -2px; bottom: -2px; border-right: 3px solid black; border-bottom: 3px solid black}");
 
   var clientConfig = {
     p : "bottom",
@@ -40,6 +46,15 @@
   }
 
   var injector = {
+    state : {
+      win: null,
+      top: 0,
+      left: 0,
+      x: 0,
+      y: 0,
+      drag: false,
+      resize: false
+    },
     install : function() {
 
       var conf = clientConfig;
@@ -70,6 +85,7 @@
       if(conf.wl) winElm.style.left = conf.wl;
       if(conf.wr) winElm.style.right = conf.wr;
       document.body.appendChild(winElm);
+      injector.state.win = winElm;
 
       if( typeof conf.wc != 'undefined') {
         winElm.style.left = ((screen.width - winElm.offsetWidth+conf.wc) / 2)+"px";
@@ -81,40 +97,43 @@
     initDraggable : function () {
       var header = document.getElementById(sp("%prefix%-header"));
       if(header) {
-        var drag = {
-          win: null,
-          top: 0,
-          left: 0,
-          x: 0,
-          y: 0
-        };
+        var drag = injector.state;
         header.addEventListener("mousedown", function(e){
-          drag.win = document.getElementById(sp("%prefix%-window"));
-          drag.top = drag.y - drag.win.offsetTop;
+          drag.drag = true;
+          drag.x = document.all ? window.event.clientX : e.pageX;
+          drag.y = document.all ? window.event.clientY : e.pageY;
           drag.left = drag.x - drag.win.offsetLeft;
+          drag.top = drag.y - drag.win.offsetTop;
           e.stopPropagation();
         });
         document.addEventListener("mousemove", function(e){
-          drag.x = document.all ? window.event.clientX : e.pageX;
-          drag.y = document.all ? window.event.clientY : e.pageY;
-          if(drag.win) {
+          if(drag.drag) {
+            drag.x = document.all ? window.event.clientX : e.pageX;
+            drag.y = document.all ? window.event.clientY : e.pageY;
             drag.win.style.left = (drag.x - drag.left)+"px";
             drag.win.style.top = (drag.y - drag.top)+"px";
           }
         });
         document.addEventListener("mouseup", function(e) {
-          drag.win = null;
+          drag.drag = false;
         });
       }
     },
     exp : function () {
       window[sp("%prefix%ToggleWindow")] = injector.toggleWindow;
     },
+    adjustSizes : function (){
+      var win = injector.state.win;
+      var header = document.getElementById(sp("%prefix%-header"));
+      var body = document.getElementById(sp("%prefix%-body"));
+      body.style.height = (win.offsetHeight - header.offsetHeight-4)+"px";
+    },
     toggleWindow : function () {
       var winElm = document.getElementById(sp('%prefix%-window'));
       if(winElm.style.display == 'none') {
         winElm.style.display = 'block';
         if(clientConfig.ht) document.getElementById(sp('%prefix%-tab')).style.display = 'none';
+        injector.adjustSizes();
       } else {
         winElm.style.display = 'none';
         document.getElementById(sp('%prefix%-tab')).style.display = 'block';
