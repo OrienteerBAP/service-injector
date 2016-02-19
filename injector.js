@@ -9,12 +9,12 @@
                           "<div id='%prefix%-footer'><div id='%prefix%-resizer'></div></div>"+
                           "</div>");
   var injectorStyles = sp("#%prefix%-tab {background: white; border: 1px solid black; padding: 1em}"+
-                          "#%prefix%-window {background: white; border: 1px solid black;}"+
+                          "#%prefix%-window {background: white; border: 1px solid black; min-width: 300px; min-height: 200px}"+
                           "#%prefix%-inner {height: 100%; width: 100%; position: relative}"+
                           "#%prefix%-header {height:1.5em; background: #aaa; text-align: right; padding: 0 .5em;cursor:move}"+
                           "#%prefix%-body {border: 1px solid #aaa; bottom: 0}"+
                           "#%prefix%-footer {position: absolute; bottom: 0; left:0; right:0}"+
-                          "#%prefix%-resizer {width: 20px; height: 20px; float:right; position: relative; right: -2px; bottom: -2px; border-right: 3px solid black; border-bottom: 3px solid black}");
+                          "#%prefix%-resizer {width: 10px; height: 10px; float:right; position: relative; right: -2px; bottom: -2px; border-right: 3px solid black; border-bottom: 3px solid black; cursor: se-resize}");
 
   var clientConfig = {
     p : "bottom",
@@ -50,14 +50,17 @@
       win: null,
       top: 0,
       left: 0,
+      width: 0,
+      height: 0,
       x: 0,
       y: 0,
       drag: false,
       resize: false
     },
+    conf : clientConfig,
     install : function() {
 
-      var conf = clientConfig;
+      var conf = injector.conf;
 
       var styleElm = document.createElement("style");
       styleElm.innerHTML = injectorStyles;
@@ -91,33 +94,59 @@
         winElm.style.left = ((screen.width - winElm.offsetWidth+conf.wc) / 2)+"px";
         winElm.style.display = 'none';
       }
-      if(conf.d) injector.initDraggable();
+      if(conf.d || conf.r) injector.initDragAndResize();
       injector.exp();
     },
-    initDraggable : function () {
-      var header = document.getElementById(sp("%prefix%-header"));
-      if(header) {
-        var drag = injector.state;
-        header.addEventListener("mousedown", function(e){
-          drag.drag = true;
-          drag.x = document.all ? window.event.clientX : e.pageX;
-          drag.y = document.all ? window.event.clientY : e.pageY;
-          drag.left = drag.x - drag.win.offsetLeft;
-          drag.top = drag.y - drag.win.offsetTop;
-          e.stopPropagation();
-        });
-        document.addEventListener("mousemove", function(e){
-          if(drag.drag) {
+    initDragAndResize : function () {
+      var conf = injector.conf;
+      var drag = injector.state;
+      if(conf.d) {
+        var header = document.getElementById(sp("%prefix%-header"));
+        if(header) {
+          header.addEventListener("mousedown", function(e){
+            drag.drag = true;
             drag.x = document.all ? window.event.clientX : e.pageX;
             drag.y = document.all ? window.event.clientY : e.pageY;
-            drag.win.style.left = (drag.x - drag.left)+"px";
-            drag.win.style.top = (drag.y - drag.top)+"px";
-          }
-        });
-        document.addEventListener("mouseup", function(e) {
-          drag.drag = false;
-        });
+            drag.left = drag.x - drag.win.offsetLeft;
+            drag.top = drag.y - drag.win.offsetTop;
+            e.stopPropagation();
+          });
+        }
       }
+      if(conf.r) {
+        var resizer = document.getElementById(sp("%prefix%-resizer"));
+        if(resizer) {
+          resizer.addEventListener("mousedown", function(e){
+            drag.resize = true;
+            drag.x = document.all ? window.event.clientX : e.pageX;
+            drag.y = document.all ? window.event.clientY : e.pageY;
+            drag.left = drag.x - drag.win.offsetLeft;
+            drag.top = drag.y - drag.win.offsetTop;
+            drag.width = drag.x - drag.win.offsetWidth;
+            drag.height = drag.y - drag.win.offsetHeight;
+            e.stopPropagation();
+          });
+        }
+      }
+      document.addEventListener("mousemove", function(e){
+        if(drag.drag) {
+          drag.x = document.all ? window.event.clientX : e.pageX;
+          drag.y = document.all ? window.event.clientY : e.pageY;
+          drag.win.style.left = (drag.x - drag.left)+"px";
+          drag.win.style.top = (drag.y - drag.top)+"px";
+        }
+        if(drag.resize) {
+          drag.x = document.all ? window.event.clientX : e.pageX;
+          drag.y = document.all ? window.event.clientY : e.pageY;
+          drag.win.style.width = (drag.x - drag.width)+"px";
+          drag.win.style.height = (drag.y - drag.height)+"px";
+          injector.adjustSizes();
+        }
+      });
+      document.addEventListener("mouseup", function(e) {
+        drag.drag = false;
+        drag.resize = false;
+      });
     },
     exp : function () {
       window[sp("%prefix%ToggleWindow")] = injector.toggleWindow;
