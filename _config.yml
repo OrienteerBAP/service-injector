@@ -1,7 +1,7 @@
 # Site settings
 title: Service-Injector
 email: phantom@ydn.ru
-description: JS library for bringing your SaaS on different sites
+description: JS library for bringing your SaaS on clients' sites
 exclude: ['CNAME', 'Gemfile', 'Gemfile.lock']
 highlighter: rouge
 permalink: pretty

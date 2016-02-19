@@ -1,26 +1,29 @@
 # service-injector
-Small JavaScript library installing tab and floating window to show external service
+Lightweight JavaScript library for SaaS providers to allow its services installation on clients' sites.
 
 ## Use Case
 
-* You are providing some SaaS in the Internet
-* You want to allow your user to install some snippet on their sites to have floating tab on a side and open embedded floating window with your SaaS
+* You provide SaaS in the Internet.
+* You want to allow your users to install a snippet on their sites as floating tab on the side with the ability to display and use your SaaS.
 
 ### What you should do
 
-* Get injector.js from this library
-* Adjust it for you needs: at least specify SaaS URL which should be used
-* Host modified JS on you SaaS
-* Provide your users with information how to install
+* Get [injector.js](https://raw.githubusercontent.com/OrienteerDW/service-injector/gh-pages/injector.js) from [our GitHub repository](https://github.com/OrienteerDW/service-injector)
+* Adjust it for your needs:
+  * URL of your SaaS
+  * Window style and design
+  * Window behavior
+* Host modified JS file on you SaaS
+* Provide your users with enough information of how to install your service on their sites.
 
 
 ## Main Requirements
 
-* Library should use pure javascript, because services derived from it can be installed on sites without JQuery support
+* Library should use pure JavaScript, because services derived from it can be installed on sites without JQuery (and other cool JS libraries)
 * Window should load service through IFRAME
 * Window should be resizable and dragable
 * Library should allow to remember size and position on a site
-* Mobile should be supported as well: by opening iframe in new window
+* Mobile devices should be supported as well by opening SaaS in the new window
 
 ## Configurations
 
@@ -42,11 +45,11 @@ Set of parameters which can be populated from client side
 | wr | window right | Initial right window position |
 | d | draggable | Is window draggable |
 | r | resizable | Is window resizable |
-| ht | hide tab | Hide tab when window is shown | 
+| ht | hide tab | Hide tab when window is shown |
 
 ### Service side
 
-Set of parameters to be configured in script themself for proper working and adjustment with your SaaS
+Set of parameters to be configured in script itself for proper working and adjustment with your SaaS
 
 | Parameter | Desciption |
 |-----------|------------|
