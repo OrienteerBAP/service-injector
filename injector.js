@@ -5,7 +5,7 @@
   var tabTemplate = sp("<a onclick='%prefix%ToggleWindow(); return false;' href='#'>Click me!</a>");
   var windowTemplate = sp("<div id='%prefix%-inner'>"+
                           "<div id='%prefix%-header'><a href='#' onclick='%prefix%ToggleWindow(); return false;' style='cursor:pointer'>X</a></div>"+
-                          "<div id='%prefix%-body'>Body</div>"+
+                          "<div id='%prefix%-body'><iframe id='%prefix%-iframe'></iframe></div>"+
                           "<div id='%prefix%-footer'><div id='%prefix%-resizer'></div></div>"+
                           "</div>");
   var injectorStyles = sp("#%prefix%-tab {background: white; border: 1px solid black; padding: 1em}"+
@@ -13,15 +13,17 @@
                           "#%prefix%-inner {height: 100%; width: 100%; position: relative}"+
                           "#%prefix%-header {height:1.5em; background: #aaa; text-align: right; padding: 0 .5em;cursor:move}"+
                           "#%prefix%-body {border: 1px solid #aaa; bottom: 0}"+
+                          "#%prefix%-iframe {border: 0}"+
                           "#%prefix%-footer {position: absolute; bottom: 0; left:0; right:0}"+
                           "#%prefix%-resizer {width: 10px; height: 10px; float:right; position: relative; right: -2px; bottom: -2px; border-right: 3px solid black; border-bottom: 3px solid black; cursor: se-resize}");
+  var saasUrl = "http://orienteer.org";
 
   var clientConfig = {
     p : "bottom",
     o : "80%",
     a : "expand",
-    ww : "400px",
-    wh : "300px",
+    ww : "440px",
+    wh : "550px",
     wt : "100px",
     wb : null,
     wl : null,
@@ -48,6 +50,7 @@
   var injector = {
     state : {
       win: null,
+      inited: false,
       top: 0,
       left: 0,
       width: 0,
@@ -155,14 +158,25 @@
       var win = injector.state.win;
       var header = document.getElementById(sp("%prefix%-header"));
       var body = document.getElementById(sp("%prefix%-body"));
+      var iframe = document.getElementById(sp("%prefix%-iframe"));
       body.style.height = (win.offsetHeight - header.offsetHeight-4)+"px";
+      iframe.style.height = (win.offsetHeight - header.offsetHeight-15)+"px";
+      iframe.style.width = (win.offsetWidth-3)+"px";
+    },
+    initIframe : function () {
+      var iframe = document.getElementById(sp("%prefix%-iframe"));
+      iframe.src = saasUrl;
+      injector.state.inited = true;
     },
     toggleWindow : function () {
-      var winElm = document.getElementById(sp('%prefix%-window'));
+      var winElm = injector.state.win;
       if(winElm.style.display == 'none') {
         winElm.style.display = 'block';
         if(clientConfig.ht) document.getElementById(sp('%prefix%-tab')).style.display = 'none';
         injector.adjustSizes();
+        if(!injector.state.inited) {
+          injector.initIframe();
+        }
       } else {
         winElm.style.display = 'none';
         document.getElementById(sp('%prefix%-tab')).style.display = 'block';
