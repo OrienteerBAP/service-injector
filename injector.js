@@ -166,23 +166,57 @@
       iframe.style.height = (win.offsetHeight - header.offsetHeight-15)+"px";
       iframe.style.width = (win.offsetWidth-3)+"px";
     },
+    animate : function(opts) {
+      if(opts.duration > 0) {
+        if(opts.onStart) opts.onStart();
+        var start = new Date();
+        var id = setInterval(function() {
+          var timePassed = new Date - start;
+          var progress = timePassed / (opts.duration || 1000);
+          if (progress > 1) progress = 1;
+          var delta = (opts.delta || function(p) {return p;})(progress);
+          opts.step(delta);
+          if (progress == 1) {
+            clearInterval(id);
+            if(opts.onFinish) opts.onFinish();
+          }
+        }, opts.delay || 10);
+      } else {
+        if(opts.onStart) opts.onStart();
+        if(opts.onFinish) opts.onFinish();
+      }
+    },
     initIframe : function () {
       var iframe = document.getElementById(sp("%prefix%-iframe"));
       iframe.src = saasUrl;
       injector.state.inited = true;
     },
     expandWindow : function () {
-      injector.state.win.style.display = 'block';
-      if(clientConfig.ht) injector.state.tab.style.display = 'none';
-      injector.adjustSizes();
-      if(!injector.state.inited) {
-        injector.initIframe();
-      }
+      injector.animate({
+        duration: 0,
+        onStart: function() {
+          if(clientConfig.ht) injector.state.tab.style.display = 'none';
+        },
+        onFinish : function() {
+          injector.state.win.style.display = 'block';
+          injector.adjustSizes();
+          if(!injector.state.inited) {
+            injector.initIframe();
+          }
+        }
+      });
       return false;
     },
     collapseWindow : function () {
-      injector.state.win.style.display = 'none';
-      injector.state.tab.style.display = 'block';
+      injector.animate({
+        duration: 0,
+        onStart: function() {
+          injector.state.win.style.display = 'none';
+        },
+        onFinish : function() {
+          injector.state.tab.style.display = 'block';
+        }
+      });
       return false;
     },
     toggleWindow : function () {
