@@ -4,7 +4,7 @@
   var siScriptId = "service-injector"; //Id of SCRIPT element which has in src this script
   var tabTemplate = sp("<a onclick='%prefix%ToggleWindow(); return false;' href='#'>Click me!</a>");
   var windowTemplate = sp("<div id='%prefix%-inner'>"+
-                          "<div id='%prefix%-header'><a href='#' onclick='%prefix%ToggleWindow(); return false;' style='cursor:pointer'>X</a></div>"+
+                          "<div id='%prefix%-header'><a href='#' onclick='return %prefix%ToggleWindow();' style='cursor:pointer'>X</a></div>"+
                           "<div id='%prefix%-body'><iframe id='%prefix%-iframe'></iframe></div>"+
                           "<div id='%prefix%-footer'><div id='%prefix%-resizer'></div></div>"+
                           "</div>");
@@ -50,6 +50,7 @@
   var injector = {
     state : {
       win: null,
+      tab: null,
       inited: false,
       top: 0,
       left: 0,
@@ -76,6 +77,7 @@
       tabElm.style[conf.p] = '0px';
       tabElm.style[offsetOrientation[conf.p]] = '80%';
       document.body.appendChild(tabElm);
+      injector.state.tab = tabElm;
 
       var winElm = document.createElement('div');
       winElm.setAttribute("id", sp("%prefix%-window"));
@@ -92,6 +94,7 @@
       if(conf.wr) winElm.style.right = conf.wr;
       document.body.appendChild(winElm);
       injector.state.win = winElm;
+
 
       if( typeof conf.wc != 'undefined') {
         winElm.style.left = ((screen.width - winElm.offsetWidth+conf.wc) / 2)+"px";
@@ -168,20 +171,26 @@
       iframe.src = saasUrl;
       injector.state.inited = true;
     },
-    toggleWindow : function () {
-      var winElm = injector.state.win;
-      if(winElm.style.display == 'none') {
-        winElm.style.display = 'block';
-        if(clientConfig.ht) document.getElementById(sp('%prefix%-tab')).style.display = 'none';
-        injector.adjustSizes();
-        if(!injector.state.inited) {
-          injector.initIframe();
-        }
-      } else {
-        winElm.style.display = 'none';
-        document.getElementById(sp('%prefix%-tab')).style.display = 'block';
+    expandWindow : function () {
+      injector.state.win.style.display = 'block';
+      if(clientConfig.ht) injector.state.tab.style.display = 'none';
+      injector.adjustSizes();
+      if(!injector.state.inited) {
+        injector.initIframe();
       }
       return false;
+    },
+    collapseWindow : function () {
+      injector.state.win.style.display = 'none';
+      injector.state.tab.style.display = 'block';
+      return false;
+    },
+    toggleWindow : function () {
+      if(injector.state.win.style.display == 'none') {
+        return injector.expandWindow();
+      } else {
+        return injector.collapseWindow();
+      }
     }
   };
 
