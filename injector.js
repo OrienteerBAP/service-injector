@@ -16,13 +16,13 @@
                           "#%prefix%-iframe {border: 0}"+
                           "#%prefix%-footer {position: absolute; bottom: 0; left:0; right:0}"+
                           "#%prefix%-resizer {width: 10px; height: 10px; float:right; position: relative; right: -2px; bottom: -2px; border-right: 3px solid black; border-bottom: 3px solid black; cursor: se-resize}"+
-                          "#%prefix%-shadow {background: red;}");
+                          "#%prefix%-shadow {background: grey; z-index: 99999}");
   var saasUrl = "http://orienteer.org";
 
   var clientConfig = {
     p : "bottom",
     o : "80%",
-    a : "expand",
+    a : 300,
     ww : "440px",
     wh : "550px",
     wt : "100px",
@@ -65,6 +65,12 @@
         height: 0
       },
       shadow: null,
+      shadowPosition : {
+        top: 0,
+        left: 0,
+        width: 0,
+        height: 0
+      },
       inited: false,
       dragState: {
         x: 0,
@@ -106,7 +112,7 @@
       winElm.style.position = 'fixed';
 
       winElm.style.top = "100px";
-      if( typeof conf.wc == 'undefined') winElm.style.display = 'none';
+      // if( typeof conf.wc == 'undefined') winElm.style.display = 'none';
       if(conf.ww) winElm.style.width = conf.ww;
       if(conf.wh) winElm.style.height = conf.wh;
       if(conf.wt) winElm.style.top = conf.wt;
@@ -115,12 +121,11 @@
       if(conf.wr) winElm.style.right = conf.wr;
       document.body.appendChild(winElm);
       injector.state.win = winElm;
-
-
       if( typeof conf.wc != 'undefined') {
         winElm.style.left = ((screen.width - winElm.offsetWidth+conf.wc) / 2)+"px";
-        winElm.style.display = 'none';
       }
+      injector.dumpPositions();
+      winElm.style.display = 'none';
       if(conf.d || conf.r) injector.initDragAndResize();
       injector.exp();
     },
@@ -207,35 +212,71 @@
         if(opts.onFinish) opts.onFinish();
       }
     },
+    shadowStep : function(delta) {
+      var state = injector.state;
+      var wp = state.winPosition;
+      var tp = state.tabPosition;
+      var sp = state.shadowPosition;
+      sp.left = (wp.left-tp.left)*delta + tp.left;
+      sp.top = (wp.top-tp.top)*delta + tp.top;
+      sp.width = (wp.width-tp.width)*delta + tp.width;
+      sp.height = (wp.height-tp.height)*delta + tp.height;
+      var s = state.shadow;
+      s.style.left = sp.left+"px";
+      s.style.top = sp.top+"px";
+      s.style.width = sp.width+"px";
+      s.style.height = sp.height+"px";
+    },
     initIframe : function () {
       var iframe = document.getElementById(sp("%prefix%-iframe"));
       iframe.src = saasUrl;
       injector.state.inited = true;
     },
+    dumpPosition : function (elm, pos) {
+      pos.left = elm.offsetLeft;
+      pos.top = elm.offsetTop;
+      pos.width = elm.offsetWidth;
+      pos.height = elm.offsetHeight;
+    },
+    dumpPositions : function () {
+      if(injector.state.win.style.display!='none')injector.dumpPosition(injector.state.win, injector.state.winPosition);
+      if(injector.state.tab.style.display!='none')injector.dumpPosition(injector.state.tab, injector.state.tabPosition);
+    },
     expandWindow : function () {
       injector.animate({
-        duration: 0,
+        duration: injector.conf.a,
+        step: injector.shadowStep,
         onStart: function() {
+          injector.dumpPositions();
           if(clientConfig.ht) injector.state.tab.style.display = 'none';
-        },
-        onFinish : function() {
-          injector.state.win.style.display = 'block';
-          injector.adjustSizes();
+          injector.state.shadow.style.display='block';
           if(!injector.state.inited) {
             injector.initIframe();
           }
+        },
+        onFinish : function() {
+          injector.state.shadow.style.display='none';
+          injector.state.win.style.display = 'block';
+          injector.adjustSizes();
+          injector.dumpPositions();  
         }
       });
       return false;
     },
     collapseWindow : function () {
       injector.animate({
-        duration: 0,
+        duration: injector.conf.a,
+        step: injector.shadowStep,
+        delta: function(p) {return 1-p},
         onStart: function() {
+          injector.dumpPositions();
+          injector.state.shadow.style.display='block';
           injector.state.win.style.display = 'none';
         },
         onFinish : function() {
+          injector.state.shadow.style.display='none';
           injector.state.tab.style.display = 'block';
+          injector.dumpPositions();
         }
       });
       return false;
