@@ -124,7 +124,7 @@
       if( typeof conf.wc != 'undefined') {
         winElm.style.left = ((screen.width - winElm.offsetWidth+conf.wc) / 2)+"px";
       }
-      injector.dumpPositions();
+      injector.savePositions();
       winElm.style.display = 'none';
       if(conf.d || conf.r) injector.initDragAndResize();
       injector.exp();
@@ -142,6 +142,7 @@
             drag.left = drag.x - injector.state.win.offsetLeft;
             drag.top = drag.y - injector.state.win.offsetTop;
             e.stopPropagation();
+            e.preventDefault();
           });
         }
       }
@@ -157,6 +158,7 @@
             drag.width = drag.x - injector.state.win.offsetWidth;
             drag.height = drag.y - injector.state.win.offsetHeight;
             e.stopPropagation();
+            e.preventDefault();
           });
         }
       }
@@ -164,20 +166,31 @@
         if(injector.state.drag) {
           drag.x = document.all ? window.event.clientX : e.pageX;
           drag.y = document.all ? window.event.clientY : e.pageY;
-          injector.state.win.style.left = (drag.x - drag.left)+"px";
-          injector.state.win.style.top = (drag.y - drag.top)+"px";
+          injector.state.winPosition.left = drag.x - drag.left;
+          injector.state.winPosition.top = drag.y - drag.top;
+          injector.restorePosition(injector.state.win, injector.state.winPosition);
+          e.stopPropagation();
+          e.preventDefault();
         }
         if(injector.state.resize) {
           drag.x = document.all ? window.event.clientX : e.pageX;
           drag.y = document.all ? window.event.clientY : e.pageY;
-          injector.state.win.style.width = (drag.x - drag.width)+"px";
-          injector.state.win.style.height = (drag.y - drag.height)+"px";
+          injector.state.winPosition.width = drag.x - drag.width;
+          injector.state.winPosition.height = drag.y - drag.height;
+          injector.restorePosition(injector.state.win, injector.state.winPosition);
           injector.adjustSizes();
+          e.stopPropagation();
+          e.preventDefault();
         }
       });
       document.addEventListener("mouseup", function(e) {
-        injector.state.drag = false;
-        injector.state.resize = false;
+        if(injector.state.drag || injector.state.resize) {
+          injector.state.drag = false;
+          injector.state.resize = false;
+          injector.savePositions();
+          e.stopPropagation();
+          e.preventDefault();
+        }
       });
     },
     exp : function () {
@@ -226,39 +239,53 @@
       s.style.top = sp.top+"px";
       s.style.width = sp.width+"px";
       s.style.height = sp.height+"px";
+      if(s.style.display!='block') s.style.display = 'block';
     },
     initIframe : function () {
       var iframe = document.getElementById(sp("%prefix%-iframe"));
       iframe.src = saasUrl;
       injector.state.inited = true;
     },
-    dumpPosition : function (elm, pos) {
+    restorePosition : function (elm, pos) {
+      if(pos.left < 0 ) pos.left = 0;
+      if(pos.top < 0 ) pos.top = 0;
+      if(pos.left + pos.width > screen.availWidth) {
+        pos.left = screen.availWidth - pos.width;
+      }
+      if(pos.top + pos.height > screen.availHeight) {
+        pos.top = screen.availHeight - pos.height;
+      }
+      elm.style.left = pos.left + "px";
+      elm.style.top = pos.top + "px";
+      elm.style.width = pos.width + "px";
+      elm.style.height = pos.height + "px";
+    },
+    savePosition : function (elm, pos) {
       pos.left = elm.offsetLeft;
       pos.top = elm.offsetTop;
       pos.width = elm.offsetWidth;
       pos.height = elm.offsetHeight;
     },
-    dumpPositions : function () {
-      if(injector.state.win.style.display!='none')injector.dumpPosition(injector.state.win, injector.state.winPosition);
-      if(injector.state.tab.style.display!='none')injector.dumpPosition(injector.state.tab, injector.state.tabPosition);
+    savePositions : function () {
+      if(injector.state.win.style.display!='none')injector.savePosition(injector.state.win, injector.state.winPosition);
+      if(injector.state.tab.style.display!='none')injector.savePosition(injector.state.tab, injector.state.tabPosition);
     },
     expandWindow : function () {
       injector.animate({
         duration: injector.conf.a,
         step: injector.shadowStep,
         onStart: function() {
-          injector.dumpPositions();
+          injector.savePositions();
           if(clientConfig.ht) injector.state.tab.style.display = 'none';
-          injector.state.shadow.style.display='block';
+        },
+        onFinish : function() {
           if(!injector.state.inited) {
             injector.initIframe();
           }
-        },
-        onFinish : function() {
           injector.state.shadow.style.display='none';
           injector.state.win.style.display = 'block';
           injector.adjustSizes();
-          injector.dumpPositions();  
+          injector.savePositions();
         }
       });
       return false;
@@ -269,14 +296,13 @@
         step: injector.shadowStep,
         delta: function(p) {return 1-p},
         onStart: function() {
-          injector.dumpPositions();
-          injector.state.shadow.style.display='block';
+          injector.savePositions();
           injector.state.win.style.display = 'none';
         },
         onFinish : function() {
           injector.state.shadow.style.display='none';
           injector.state.tab.style.display = 'block';
-          injector.dumpPositions();
+          injector.savePositions();
         }
       });
       return false;
