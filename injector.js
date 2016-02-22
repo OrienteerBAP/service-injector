@@ -15,7 +15,8 @@
                           "#%prefix%-body {border: 1px solid #aaa; bottom: 0}"+
                           "#%prefix%-iframe {border: 0}"+
                           "#%prefix%-footer {position: absolute; bottom: 0; left:0; right:0}"+
-                          "#%prefix%-resizer {width: 10px; height: 10px; float:right; position: relative; right: -2px; bottom: -2px; border-right: 3px solid black; border-bottom: 3px solid black; cursor: se-resize}");
+                          "#%prefix%-resizer {width: 10px; height: 10px; float:right; position: relative; right: -2px; bottom: -2px; border-right: 3px solid black; border-bottom: 3px solid black; cursor: se-resize}"+
+                          "#%prefix%-shadow {background: red;}");
   var saasUrl = "http://orienteer.org";
 
   var clientConfig = {
@@ -50,14 +51,27 @@
   var injector = {
     state : {
       win: null,
+      winPosition: {
+        top: 0,
+        left: 0,
+        width: 0,
+        height: 0
+      },
       tab: null,
+      tabPosition : {
+        top: 0,
+        left: 0,
+        width: 0,
+        height: 0
+      },
+      shadow: null,
       inited: false,
-      top: 0,
-      left: 0,
-      width: 0,
-      height: 0,
-      x: 0,
-      y: 0,
+      dragState: {
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0
+      },
       drag: false,
       resize: false
     },
@@ -69,6 +83,13 @@
       var styleElm = document.createElement("style");
       styleElm.innerHTML = injectorStyles;
       document.getElementsByTagName('head')[0].appendChild(styleElm);
+
+      var shadowElm = document.createElement('div');
+      shadowElm.setAttribute("id", sp("%prefix%-shadow"));
+      shadowElm.style.position = 'fixed';
+      shadowElm.style.display = 'none';
+      document.body.appendChild(shadowElm);
+      injector.state.shadow = shadowElm;
 
       var tabElm = document.createElement('div');
       tabElm.setAttribute("id", sp("%prefix%-tab"));
@@ -105,16 +126,16 @@
     },
     initDragAndResize : function () {
       var conf = injector.conf;
-      var drag = injector.state;
+      var drag = injector.state.dragState;
       if(conf.d) {
         var header = document.getElementById(sp("%prefix%-header"));
         if(header) {
           header.addEventListener("mousedown", function(e){
-            drag.drag = true;
+            injector.state.drag = true;
             drag.x = document.all ? window.event.clientX : e.pageX;
             drag.y = document.all ? window.event.clientY : e.pageY;
-            drag.left = drag.x - drag.win.offsetLeft;
-            drag.top = drag.y - drag.win.offsetTop;
+            drag.left = drag.x - injector.state.win.offsetLeft;
+            drag.top = drag.y - injector.state.win.offsetTop;
             e.stopPropagation();
           });
         }
@@ -123,35 +144,35 @@
         var resizer = document.getElementById(sp("%prefix%-resizer"));
         if(resizer) {
           resizer.addEventListener("mousedown", function(e){
-            drag.resize = true;
+            injector.state.resize = true;
             drag.x = document.all ? window.event.clientX : e.pageX;
             drag.y = document.all ? window.event.clientY : e.pageY;
-            drag.left = drag.x - drag.win.offsetLeft;
-            drag.top = drag.y - drag.win.offsetTop;
-            drag.width = drag.x - drag.win.offsetWidth;
-            drag.height = drag.y - drag.win.offsetHeight;
+            drag.left = drag.x - injector.state.win.offsetLeft;
+            drag.top = drag.y - injector.state.win.offsetTop;
+            drag.width = drag.x - injector.state.win.offsetWidth;
+            drag.height = drag.y - injector.state.win.offsetHeight;
             e.stopPropagation();
           });
         }
       }
       document.addEventListener("mousemove", function(e){
-        if(drag.drag) {
+        if(injector.state.drag) {
           drag.x = document.all ? window.event.clientX : e.pageX;
           drag.y = document.all ? window.event.clientY : e.pageY;
-          drag.win.style.left = (drag.x - drag.left)+"px";
-          drag.win.style.top = (drag.y - drag.top)+"px";
+          injector.state.win.style.left = (drag.x - drag.left)+"px";
+          injector.state.win.style.top = (drag.y - drag.top)+"px";
         }
-        if(drag.resize) {
+        if(injector.state.resize) {
           drag.x = document.all ? window.event.clientX : e.pageX;
           drag.y = document.all ? window.event.clientY : e.pageY;
-          drag.win.style.width = (drag.x - drag.width)+"px";
-          drag.win.style.height = (drag.y - drag.height)+"px";
+          injector.state.win.style.width = (drag.x - drag.width)+"px";
+          injector.state.win.style.height = (drag.y - drag.height)+"px";
           injector.adjustSizes();
         }
       });
       document.addEventListener("mouseup", function(e) {
-        drag.drag = false;
-        drag.resize = false;
+        injector.state.drag = false;
+        injector.state.resize = false;
       });
     },
     exp : function () {
