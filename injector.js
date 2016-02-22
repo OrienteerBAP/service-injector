@@ -2,7 +2,7 @@
   /*Server side config*/
   var prefix = "si"; //Usefull to support several injections per page
   var siScriptId = "service-injector"; //Id of SCRIPT element which has in src this script
-  var tabTemplate = sp("<a onclick='%prefix%ToggleWindow(); return false;' href='#'>Click me!</a>");
+  var tabTemplate = sp("<a onclick='return %prefix%ToggleWindow();' href='#'>Click me!</a>");
   var windowTemplate = sp("<div id='%prefix%-inner'>"+
                           "<div id='%prefix%-header'><a href='#' onclick='return %prefix%ToggleWindow();' style='cursor:pointer'>X</a></div>"+
                           "<div id='%prefix%-body'><iframe id='%prefix%-iframe'></iframe></div>"+
@@ -71,6 +71,7 @@
         width: 0,
         height: 0
       },
+      iframe: null,
       inited: false,
       dragState: {
         x: 0,
@@ -102,7 +103,7 @@
       tabElm.innerHTML = tabTemplate;
       tabElm.style.position = 'fixed';
       tabElm.style[conf.p] = '0px';
-      tabElm.style[offsetOrientation[conf.p]] = '80%';
+      tabElm.style[offsetOrientation[conf.p]] = conf.o;
       document.body.appendChild(tabElm);
       injector.state.tab = tabElm;
 
@@ -128,6 +129,18 @@
       winElm.style.display = 'none';
       if(conf.d || conf.r) injector.initDragAndResize();
       injector.exp();
+
+      injector.state.iframe = document.getElementById(sp("%prefix%-iframe"));
+
+      var preventParentScrolling = function(e) {
+        if(e.target === injector.state.iframe) {
+          e.preventDefault();
+        }
+      }
+      // IE9, Chrome, Safari, Opera
+      document.addEventListener("mousewheel", preventParentScrolling, false);
+    	// Firefox
+    	document.addEventListener("DOMMouseScroll", preventParentScrolling, false);
     },
     initDragAndResize : function () {
       var conf = injector.conf;
@@ -162,7 +175,7 @@
           });
         }
       }
-      document.addEventListener("mousemove", function(e){
+      window.addEventListener("mousemove", function(e){
         if(injector.state.drag) {
           drag.x = document.all ? window.event.clientX : e.pageX;
           drag.y = document.all ? window.event.clientY : e.pageY;
@@ -183,7 +196,7 @@
           e.preventDefault();
         }
       });
-      document.addEventListener("mouseup", function(e) {
+      window.addEventListener("mouseup", function(e) {
         if(injector.state.drag || injector.state.resize) {
           injector.state.drag = false;
           injector.state.resize = false;
@@ -242,8 +255,7 @@
       if(s.style.display!='block') s.style.display = 'block';
     },
     initIframe : function () {
-      var iframe = document.getElementById(sp("%prefix%-iframe"));
-      iframe.src = saasUrl;
+      injector.state.iframe.src = saasUrl;
       injector.state.inited = true;
     },
     restorePosition : function (elm, pos) {
