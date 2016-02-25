@@ -97,6 +97,7 @@
       shadowElm.setAttribute("id", sp("%prefix%-shadow"));
       shadowElm.style.position = 'fixed';
       shadowElm.style.display = 'none';
+      shadowElm.style['z-index'] = 99997;
       document.body.appendChild(shadowElm);
       injector.state.shadow = shadowElm;
 
@@ -106,6 +107,7 @@
       tabElm.style.position = 'fixed';
       tabElm.style[conf.p] = '0px';
       tabElm.style[offsetOrientation[conf.p]] = conf.o;
+      tabElm.style['z-index'] = 99998;
       document.body.appendChild(tabElm);
       injector.state.tab = tabElm;
 
@@ -122,6 +124,7 @@
       if(conf.wb) winElm.style.bottom = conf.wb;
       if(conf.wl) winElm.style.left = conf.wl;
       if(conf.wr) winElm.style.right = conf.wr;
+      winElm.style['z-index'] = 99999;
       document.body.appendChild(winElm);
       injector.state.win = winElm;
       if( typeof conf.wc != 'undefined') {
