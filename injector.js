@@ -85,9 +85,32 @@
       resize: false
     },
     conf : clientConfig,
+    parseValue : function (val) {
+      if(/^(\-|\+)?([0-9]+|Infinity)$/.test(val)) return Number(val);
+      else if(val === 'true') return true;
+      else if(val === 'false') return false;
+      else return val;
+    },
     install : function() {
 
       var conf = injector.conf;
+      //Load configuration from script
+      var script = document.getElementById(siScriptId);
+      if(script) {
+        var src = script.getAttribute('src');
+        if(src) {
+          var indx = src.indexOf('?');
+          if(indx>0) {
+            var args = src.substring(indx+1).split('&');
+            for(var i=0; i<args.length; i++) {
+              var kvp = args[i].split('=');
+              var key = kvp[0];
+              var value = kvp[1];
+              if(conf[key]) conf[key] = injector.parseValue(value);
+            }
+          }
+        }
+      }
 
       var styleElm = document.createElement("style");
       styleElm.innerHTML = injectorStyles;
@@ -320,7 +343,7 @@
         step: injector.shadowStep,
         onStart: function() {
           injector.savePositions();
-          if(clientConfig.ht) injector.state.tab.style.display = 'none';
+          if(injector.conf.ht) injector.state.tab.style.display = 'none';
         },
         onFinish : function() {
           if(!injector.state.inited) {
