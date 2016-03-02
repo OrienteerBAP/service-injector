@@ -43,6 +43,22 @@
     left: "top",
     right: "top"
   }
+/*Dictionary of mapping extended name to configuration*/
+  var configMapping = {
+    'position' : 'p',
+		'offset' : 'o',
+		'animation' : 'a',
+		'window-width' : 'ww',
+		'window-height' : 'wh',
+		'window-top' : 'wt',
+		'window-bottom' : 'wb',
+		'window-left' : 'wl',
+		'window-center' : 'wc',
+		'window-right' : 'wr',
+		'draggable' : 'd',
+		'resizable' : 'r',
+		'hide-tab' : 'ht',
+  }
 
   /*Substitute prefix*/
   function sp(str) {
@@ -106,6 +122,15 @@
               var kvp = args[i].split('=');
               var key = kvp[0];
               var value = kvp[1];
+              if(conf[key]) conf[key] = injector.parseValue(value);
+            }
+          }
+        }
+        if(script.dataset) {
+          for(id in script.dataset) {
+            if(configMapping[id]) {
+              var key = configMapping[id];
+              var value = script.dataset[id];
               if(conf[key]) conf[key] = injector.parseValue(value);
             }
           }
