@@ -67,6 +67,7 @@
 
   var injector = {
     state : {
+      root: null,
       win: null,
       winPosition: {
         top: 0,
@@ -141,12 +142,17 @@
       styleElm.innerHTML = injectorStyles;
       document.getElementsByTagName('head')[0].appendChild(styleElm);
 
+      var rootElm = document.createElement('div');
+      rootElm.setAttribute("id", sp("%prefix%-service-injector"));
+      document.body.appendChild(rootElm);
+      injector.state.root = rootElm;
+
       var shadowElm = document.createElement('div');
       shadowElm.setAttribute("id", sp("%prefix%-shadow"));
       shadowElm.style.position = 'fixed';
       shadowElm.style.display = 'none';
       shadowElm.style['z-index'] = 99997;
-      document.body.appendChild(shadowElm);
+      rootElm.appendChild(shadowElm);
       injector.state.shadow = shadowElm;
 
       var tabElm = document.createElement('div');
@@ -156,7 +162,7 @@
       tabElm.style[conf.p] = '0px';
       tabElm.style[offsetOrientation[conf.p]] = conf.o;
       tabElm.style['z-index'] = 99998;
-      document.body.appendChild(tabElm);
+      rootElm.appendChild(tabElm);
       injector.state.tab = tabElm;
 
       var winElm = document.createElement('div');
@@ -173,7 +179,7 @@
       if(conf.wl) winElm.style.left = conf.wl;
       if(conf.wr) winElm.style.right = conf.wr;
       winElm.style['z-index'] = 99999;
-      document.body.appendChild(winElm);
+      rootElm.appendChild(winElm);
       injector.state.win = winElm;
       if( typeof conf.wc != 'undefined') {
         winElm.style.left = ((screen.width - winElm.offsetWidth+conf.wc) / 2)+"px";
