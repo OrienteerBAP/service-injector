@@ -284,6 +284,7 @@
                             drag.y = p.y;
                             drag.left = drag.x - injector.state.win.offsetLeft;
                             drag.top = drag.y - injector.state.win.offsetTop;
+                            if(injector.state.iframe) injector.state.iframe.style.pointerEvents = 'none';
                             e.stopPropagation();
                             e.preventDefault();
                           };
@@ -303,6 +304,7 @@
                             drag.top = drag.y - injector.state.win.offsetTop;
                             drag.width = drag.x - injector.state.win.offsetWidth;
                             drag.height = drag.y - injector.state.win.offsetHeight;
+                            if(injector.state.iframe) injector.state.iframe.style.pointerEvents = 'none';
                             e.stopPropagation();
                             e.preventDefault();
                           };
@@ -338,6 +340,7 @@
         if(injector.state.drag || injector.state.resize) {
           injector.state.drag = false;
           injector.state.resize = false;
+          if(injector.state.iframe) injector.state.iframe.style.pointerEvents = '';
           injector.savePositions();
           e.stopPropagation();
           e.preventDefault();
