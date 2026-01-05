@@ -82,34 +82,43 @@
     }
 
     button:active {
-      background: #e5e5e5;
       transform: translateY(1px);
     }
 
-    button.preset {
+    /* Selected state for single-select buttons */
+    button.selected {
       background: linear-gradient(to bottom, #4a90d9, #357abd);
       border-color: #357abd;
       color: #fff;
     }
 
-    button.preset:hover {
+    button.selected:hover {
       background: linear-gradient(to bottom, #5a9fe9, #4589cc);
       border-color: #4589cc;
     }
 
-    button.preset:active {
-      background: linear-gradient(to bottom, #357abd, #2a6298);
+    /* Toggle buttons - selected state (green) */
+    button.toggle.selected {
+      background: linear-gradient(to bottom, #48bb78, #38a169);
+      border-color: #38a169;
+      color: #fff;
     }
 
-    button.feature {
-      background: #fff5f5;
-      border-color: #ffcccc;
-      color: #c53030;
+    button.toggle.selected:hover {
+      background: linear-gradient(to bottom, #58cb88, #48b179);
+      border-color: #48b179;
     }
 
-    button.feature:hover {
-      background: #ffe5e5;
-      border-color: #ffaaaa;
+    /* Toggle buttons - off state (subtle red tint) */
+    button.toggle:not(.selected) {
+      background: #fff;
+      border-color: #ddd;
+      color: #666;
+    }
+
+    button.toggle:not(.selected):hover {
+      background: #fafafa;
+      border-color: #ccc;
     }
 
     .note {
@@ -147,60 +156,73 @@
   <div class="container">
     <header>
       <h1>service-injector Demo</h1>
-      <p>Click any button to load the floating window with different configurations</p>
+      <p>Select options to configure the floating window. Changes apply instantly.</p>
     </header>
 
     <div class="section">
       <div class="section-title">Tab Position</div>
-      <div class="button-group">
-        <button onclick="loadInjector({p: 'bottom', o: '80%'})">Bottom</button>
-        <button onclick="loadInjector({p: 'top', o: '80%'})">Top</button>
-        <button onclick="loadInjector({p: 'left', o: '50%'})">Left</button>
-        <button onclick="loadInjector({p: 'right', o: '50%'})">Right</button>
+      <div class="button-group" data-group="position">
+        <button class="selected" onclick="selectOption(this, 'position', {p: 'bottom'})">Bottom</button>
+        <button onclick="selectOption(this, 'position', {p: 'top'})">Top</button>
+        <button onclick="selectOption(this, 'position', {p: 'left'})">Left</button>
+        <button onclick="selectOption(this, 'position', {p: 'right'})">Right</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Tab Offset</div>
+      <div class="button-group" data-group="offset">
+        <button onclick="selectOption(this, 'offset', {o: '25%'})">25%</button>
+        <button onclick="selectOption(this, 'offset', {o: '50%'})">50%</button>
+        <button class="selected" onclick="selectOption(this, 'offset', {o: '75%'})">75%</button>
+        <button onclick="selectOption(this, 'offset', {o: '100px'})">100px</button>
+        <button onclick="selectOption(this, 'offset', {o: '200px'})">200px</button>
       </div>
     </div>
 
     <div class="section">
       <div class="section-title">Window Size</div>
-      <div class="button-group">
-        <button onclick="loadInjector({ww: '300px', wh: '350px'})">Small (300x350)</button>
-        <button onclick="loadInjector({ww: '440px', wh: '550px'})">Medium (440x550)</button>
-        <button onclick="loadInjector({ww: '600px', wh: '700px'})">Large (600x700)</button>
+      <div class="button-group" data-group="size">
+        <button onclick="selectOption(this, 'size', {ww: '300px', wh: '350px'})">Small (300x350)</button>
+        <button class="selected" onclick="selectOption(this, 'size', {ww: '440px', wh: '550px'})">Medium (440x550)</button>
+        <button onclick="selectOption(this, 'size', {ww: '600px', wh: '700px'})">Large (600x700)</button>
       </div>
     </div>
 
     <div class="section">
       <div class="section-title">Animation Speed</div>
-      <div class="button-group">
-        <button onclick="loadInjector({a: 0})">None (instant)</button>
-        <button onclick="loadInjector({a: 150})">Fast (150ms)</button>
-        <button onclick="loadInjector({a: 300})">Normal (300ms)</button>
-        <button onclick="loadInjector({a: 600})">Slow (600ms)</button>
+      <div class="button-group" data-group="animation">
+        <button onclick="selectOption(this, 'animation', {a: 0})">None (instant)</button>
+        <button onclick="selectOption(this, 'animation', {a: 150})">Fast (150ms)</button>
+        <button class="selected" onclick="selectOption(this, 'animation', {a: 300})">Normal (300ms)</button>
+        <button onclick="selectOption(this, 'animation', {a: 600})">Slow (600ms)</button>
       </div>
     </div>
 
     <div class="section">
       <div class="section-title">Features</div>
       <div class="button-group">
-        <button class="feature" onclick="loadInjector({d: false})">No Drag</button>
-        <button class="feature" onclick="loadInjector({r: false})">No Resize</button>
-        <button onclick="loadInjector({ht: true})">Hide Tab on Open</button>
+        <button class="toggle selected" onclick="toggleOption(this, 'd')">Draggable</button>
+        <button class="toggle selected" onclick="toggleOption(this, 'r')">Resizable</button>
+        <button class="toggle" onclick="toggleOption(this, 'ht')">Hide Tab</button>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title">Presets with Custom URLs</div>
-      <div class="button-group">
-        <button class="preset" onclick="loadInjector({url: 'https://en.wikipedia.org', p: 'right', o: '20%', ww: '500px', wh: '600px'})">Wikipedia</button>
-        <button class="preset" onclick="loadInjector({url: 'https://github.com', p: 'left', o: '30%', ww: '450px', wh: '550px'})">GitHub</button>
-        <button class="preset" onclick="loadInjector({url: 'https://example.com', p: 'bottom', o: '10%', ww: '400px', wh: '300px'})">Example.com</button>
-        <button class="preset" onclick="loadInjector({url: 'https://duckduckgo.com', p: 'top', o: '70%', ww: '550px', wh: '450px'})">DuckDuckGo</button>
+      <div class="section-title">URL to Load</div>
+      <div class="button-group" data-group="url">
+        <button class="selected" onclick="selectOption(this, 'url', {url: null})">Default</button>
+        <button onclick="selectOption(this, 'url', {url: 'https://en.wikipedia.org'})">Wikipedia</button>
+        <button onclick="selectOption(this, 'url', {url: 'https://github.com'})">GitHub</button>
+        <button onclick="selectOption(this, 'url', {url: 'https://example.com'})">Example</button>
+        <button onclick="selectOption(this, 'url', {url: 'https://duckduckgo.com'})">DuckDuckGo</button>
       </div>
     </div>
 
     <div class="note">
-      <strong>Tip:</strong> After clicking a button, look for the floating tab on the edge of the screen. 
-      Click the tab to open the window. You can drag the window header and resize from the bottom-right corner.
+      <strong>Tip:</strong> After selecting options, look for the floating tab on the edge of the screen. 
+      Click the tab to open the window. You can drag the window header and resize from the bottom-right corner 
+      (if those features are enabled).
     </div>
 
     <footer>
@@ -209,8 +231,22 @@
   </div>
 
   <script>
+    // Current configuration state
+    var currentConfig = {
+      p: 'bottom',
+      o: '75%',
+      ww: '440px',
+      wh: '550px',
+      a: 300,
+      d: true,
+      r: true,
+      ht: false,
+      url: null
+    };
+
     var injectorStyleElement = null;
 
+    // Clean up existing injector
     function cleanup() {
       // Remove existing injector root element
       var root = document.getElementById('si-service-injector');
@@ -239,15 +275,16 @@
       }
     }
 
-    function loadInjector(config) {
+    // Load injector with current configuration
+    function loadInjector() {
       // Clean up any existing injector
       cleanup();
 
-      // Build query string from config
+      // Build query string from currentConfig
       var params = [];
-      for (var key in config) {
-        if (config.hasOwnProperty(key)) {
-          params.push(key + '=' + encodeURIComponent(config[key]));
+      for (var key in currentConfig) {
+        if (currentConfig.hasOwnProperty(key) && currentConfig[key] !== null) {
+          params.push(key + '=' + encodeURIComponent(currentConfig[key]));
         }
       }
       var queryString = params.length > 0 ? '?' + params.join('&') : '';
@@ -269,9 +306,46 @@
       document.body.appendChild(script);
     }
 
+    // Single-select: select one option in a group
+    function selectOption(button, group, configUpdates) {
+      // Remove .selected from all buttons in this group
+      var groupContainer = document.querySelector('[data-group="' + group + '"]');
+      if (groupContainer) {
+        var buttons = groupContainer.querySelectorAll('button');
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].classList.remove('selected');
+        }
+      }
+
+      // Add .selected to clicked button
+      button.classList.add('selected');
+
+      // Merge configUpdates into currentConfig
+      for (var key in configUpdates) {
+        if (configUpdates.hasOwnProperty(key)) {
+          currentConfig[key] = configUpdates[key];
+        }
+      }
+
+      // Reload injector with new config
+      loadInjector();
+    }
+
+    // Toggle: toggle a feature on/off
+    function toggleOption(button, configKey) {
+      // Toggle .selected class
+      button.classList.toggle('selected');
+
+      // Toggle the config value
+      currentConfig[configKey] = !currentConfig[configKey];
+
+      // Reload injector with new config
+      loadInjector();
+    }
+
     // Load default injector on page load
     window.onload = function() {
-      loadInjector({});
+      loadInjector();
     };
   </script>
 </body>
