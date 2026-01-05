@@ -2,7 +2,7 @@
   /*Server side config*/
   var prefix = "si"; //Usefull to support several injections per page
   var siScriptId = "service-injector"; //Id of SCRIPT element which has in src this script
-  var saasUrl = "http://orienteer.org";
+  var saasUrl = "https://orienteer.org";
   var tabTemplate = sp("<a onclick='return %prefix%ToggleWindow();' href='%url%'>Click me!</a>");
   var windowTemplate = sp("<div id='%prefix%-inner'>"+
                           "<div id='%prefix%-header'><a href='#' onclick='return %prefix%ToggleWindow();' style='cursor:pointer'>X</a></div>"+
@@ -108,7 +108,14 @@
       if(/^(\-|\+)?([0-9]+|Infinity)$/.test(val)) return Number(val);
       else if(val === 'true') return true;
       else if(val === 'false') return false;
-      else return val;
+      else {
+        try {
+          return decodeURIComponent(val);
+        } catch(e) {
+          console.error('service-injector: Failed to decode value:', val, e);
+          return val;
+        }
+      }
     },
     install : function() {
 
