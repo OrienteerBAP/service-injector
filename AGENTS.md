@@ -8,29 +8,15 @@ This document provides guidelines for AI coding agents working on this repositor
 
 **Tech Stack:**
 - Primary Language: JavaScript (ES5, vanilla/pure JS)
-- Documentation Site: Jekyll (Ruby-based static site generator)
-- Styling: SCSS/SASS
 
 ## Build/Lint/Test Commands
 
 ### No Build System
 This project has no build pipeline, test framework, or linting configuration. The JavaScript file (`injector.js`) is designed to be used directly without transpilation.
 
-### Jekyll Commands (Documentation Site)
-```bash
-# Build the Jekyll site
-jekyll build
-
-# Serve locally with live reload
-jekyll serve
-
-# Build for production
-JEKYLL_ENV=production jekyll build
-```
-
 ### Running Tests
 There is no test framework configured. When adding features, test manually by:
-1. Opening `index.html` in a browser
+1. Creating an HTML file that loads `injector.js`
 2. Testing the floating tab/window functionality
 3. Verifying mobile device behavior (opens in new window)
 4. Testing drag and resize functionality
@@ -116,21 +102,6 @@ if(script) {
 // Regex validation
 if(/^(\-|\+)?([0-9]+|Infinity)$/.test(val)) return Number(val);
 ```
-
-### SCSS/SASS (css/, _sass/)
-
-- Use `$` prefix for variables with hyphen-case: `$base-font-family`, `$grey-color-light`
-- Main file: `css/main.scss` (contains variables and imports)
-- Partials in `_sass/`: `_base.scss`, `_layout.scss`, `_syntax-highlighting.scss`
-- Use `@import` for partials (no underscore in import statement)
-- Use `/** */` comments for section headers
-- Use SCSS nesting for related elements, `%placeholder` selectors, and `@include` for mixins
-
-### HTML/Jekyll Templates
-
-- Use `{% %}` for logic, `{{ }}` for output
-- Layouts in `_layouts/`, includes in `_includes/`
-- Standard HTML5 structure
 
 ## Important Patterns
 
