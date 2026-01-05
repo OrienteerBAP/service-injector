@@ -6,24 +6,49 @@ Lightweight JavaScript library for SaaS providers to allow its services installa
 * You provide SaaS in the Internet.
 * You want to allow your users to install a snippet on their sites as floating tab on the side with the ability to display and use your SaaS.
 
-### What you should do
+## Features
 
-* Get [injector.js](https://raw.githubusercontent.com/OrienteerDW/service-injector/gh-pages/injector.js) from [our GitHub repository](https://github.com/OrienteerDW/service-injector)
-* Adjust it for your needs:
-  * URL of your SaaS
-  * Window style and design
-  * Window behavior
-* Host modified JS file on you SaaS
-* Provide your users with enough information of how to install your service on their sites.
+- **Zero Dependencies** — Pure vanilla JavaScript (ES5) with no jQuery, React, or other libraries required. Works on any website regardless of tech stack.
+  ```html
+  <script id="service-injector" src="https://yoursite.com/injector.js"></script>
+  ```
 
+- **Drop-in Configuration** — Configure behavior via query string parameters or data attributes. No coding required for your clients.
+  ```html
+  <!-- Query parameters -->
+  <script id="service-injector" src="injector.js?p=right&o=100px&ww=500px"></script>
+  
+  <!-- Or data attributes -->
+  <script id="service-injector" src="injector.js" data-position="right" data-offset="100px"></script>
+  ```
 
-## Main Requirements
+- **Mobile-Aware** — Automatically detects mobile devices and opens SaaS in a new browser window instead of an iframe for optimal UX.
 
-* Library should use pure JavaScript, because services derived from it can be installed on sites without JQuery (and other cool JS libraries)
-* Window should load service through IFRAME
-* Window should be resizable and dragable
-* Library should allow to remember size and position on a site
-* Mobile devices should be supported as well by opening SaaS in the new window
+- **Interactive Window** — Draggable header and resizable corner with full touch event support. Both features can be toggled via configuration.
+  ```html
+  <script id="service-injector" src="injector.js?d=true&r=true"></script>
+  ```
+
+- **Fully Customizable** — Override tab template, window template, and styles without modifying source code. Use global JS config or DOM elements.
+  ```html
+  <script>
+    window.serviceInjectorConfig = {
+      tabTemplate: "<a onclick='return siToggleWindow();'>Support</a>",
+      styles: "#si-tab { background: #4a90d9; color: white; }"
+    };
+  </script>
+  <script id="service-injector" src="injector.js"></script>
+  ```
+
+## Getting Started
+
+1. Get [injector.js](https://raw.githubusercontent.com/OrienteerDW/service-injector/gh-pages/injector.js) from [our GitHub repository](https://github.com/OrienteerDW/service-injector)
+2. Adjust it for your needs:
+   * URL of your SaaS
+   * Window style and design
+   * Window behavior
+3. Host the modified JS file on your SaaS
+4. Provide your users with instructions on how to install your service on their sites.
 
 ## Configurations
 

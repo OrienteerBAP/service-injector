@@ -1,3 +1,9 @@
+---
+id: AGENTS
+aliases: []
+tags: []
+---
+
 # AGENTS.md - AI Agent Guidelines for service-injector
 
 This document provides guidelines for AI coding agents working on this repository.
@@ -189,7 +195,7 @@ siDestroy();
 - Inline styles are in `injectorStyles` variable
 - Use `sp()` function to include prefix placeholders
 
-## Git Workflow
+# Master Rules to Follow
 
 - Always commit changes after completing a task
 - Do not push to remote unless explicitly requested by the user
