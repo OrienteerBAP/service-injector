@@ -67,6 +67,40 @@
     return str.replace(/%prefix%/g, prefix).replace(/%url%/g, saasUrl);
   }
 
+  /*Load custom templates from global config or DOM elements*/
+  function loadCustomTemplates() {
+    var globalConfig = window.serviceInjectorConfig || {};
+
+    // Tab template: check global config, then DOM element, then use default
+    if (globalConfig.tabTemplate) {
+      tabTemplate = sp(globalConfig.tabTemplate);
+    } else {
+      var tabTemplateElm = document.getElementById(prefix + '-tab-template');
+      if (tabTemplateElm) {
+        tabTemplate = sp(tabTemplateElm.innerHTML);
+      }
+    }
+
+    // Window template: check global config, then DOM element, then use default
+    if (globalConfig.windowTemplate) {
+      windowTemplate = sp(globalConfig.windowTemplate);
+    } else {
+      var windowTemplateElm = document.getElementById(prefix + '-window-template');
+      if (windowTemplateElm) {
+        windowTemplate = sp(windowTemplateElm.innerHTML);
+      }
+    }
+
+    // Custom styles: append from global config and/or DOM element
+    if (globalConfig.styles) {
+      injectorStyles += sp(globalConfig.styles);
+    }
+    var customStylesElm = document.getElementById(prefix + '-custom-styles');
+    if (customStylesElm) {
+      injectorStyles += sp(customStylesElm.innerHTML);
+    }
+  }
+
   var injector = {
     state : {
       root: null,
@@ -118,6 +152,7 @@
       }
     },
     install : function() {
+      loadCustomTemplates();
 
       var conf = injector.conf;
       //Load configuration from script

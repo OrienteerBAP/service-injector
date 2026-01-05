@@ -70,3 +70,58 @@ Set of parameters to be configured in script itself for proper working and adjus
 | url | url to open within iframe |
 | tabTemplate | Tab template to be used to display a tab |
 | windowTemplate | Window template to be used to display a floating window: wrapper over your iframe |
+
+## Customizing Templates
+
+You can customize the tab appearance, window structure, and styles without modifying the library source code.
+
+### Using Global Configuration
+
+Define `window.serviceInjectorConfig` before loading the library:
+
+```html
+<script>
+  window.serviceInjectorConfig = {
+    tabTemplate: "<a onclick='return siToggleWindow();' href='#'>🚀 Open Panel</a>",
+    styles: "#si-tab { background: #4a90d9; color: white; border-radius: 8px; }"
+  };
+</script>
+<script id="service-injector" src="injector.js"></script>
+```
+
+### Using DOM Elements
+
+Alternatively, define templates using script/style elements with specific IDs:
+
+```html
+<!-- Custom tab template -->
+<script type="text/template" id="si-tab-template">
+  <a onclick='return siToggleWindow();' href='#'>🚀 Open Panel</a>
+</script>
+
+<!-- Custom styles (appended to defaults) -->
+<style id="si-custom-styles">
+  #si-tab { background: #4a90d9; color: white; border-radius: 8px; }
+  #si-header { background: #357abd; color: white; }
+</style>
+
+<script id="service-injector" src="injector.js"></script>
+```
+
+### Available Placeholders
+
+Templates support these placeholders:
+- `%prefix%` - Element ID prefix (default: "si")
+- `%url%` - The configured URL
+
+### Customizable Elements
+
+| Element ID | Description |
+|------------|-------------|
+| `#si-tab` | The floating tab button |
+| `#si-window` | The popup window container |
+| `#si-header` | Window header (draggable area) |
+| `#si-body` | Window body (contains iframe) |
+| `#si-iframe` | The iframe element |
+| `#si-footer` | Window footer |
+| `#si-resizer` | Resize handle |

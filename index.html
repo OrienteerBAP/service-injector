@@ -219,6 +219,16 @@
       </div>
     </div>
 
+    <div class="section">
+      <div class="section-title">Theme</div>
+      <div class="button-group" data-group="theme">
+        <button class="selected" onclick="selectTheme(this, 'default')">Default</button>
+        <button onclick="selectTheme(this, 'blue')">Blue</button>
+        <button onclick="selectTheme(this, 'dark')">Dark</button>
+        <button onclick="selectTheme(this, 'minimal')">Minimal</button>
+      </div>
+    </div>
+
     <div class="note">
       <strong>Tip:</strong> After selecting options, look for the floating tab on the edge of the screen. 
       Click the tab to open the window. You can drag the window header and resize from the bottom-right corner 
@@ -244,6 +254,41 @@
       url: null
     };
 
+    // Theme definitions
+    var themes = {
+      default: {
+        tabTemplate: null,
+        windowTemplate: null,
+        styles: null
+      },
+      blue: {
+        tabTemplate: "<a onclick='return %prefix%ToggleWindow();' href='%url%'>💬 Open</a>",
+        windowTemplate: null,
+        styles: "#%prefix%-tab { background: linear-gradient(to bottom, #4a90d9, #357abd); color: white; border: none; border-radius: 8px; padding: 12px 16px; }" +
+                "#%prefix%-header { background: #357abd; color: white; }" +
+                "#%prefix%-window { border: 2px solid #357abd; border-radius: 8px; overflow: hidden; }" +
+                "#%prefix%-header a { color: white; }"
+      },
+      dark: {
+        tabTemplate: "<a onclick='return %prefix%ToggleWindow();' href='%url%'>⚡ Launch</a>",
+        windowTemplate: null,
+        styles: "#%prefix%-tab { background: #1a1a2e; color: #eee; border: 1px solid #444; }" +
+                "#%prefix%-header { background: #16213e; color: #eee; }" +
+                "#%prefix%-window { background: #1a1a2e; border: 1px solid #444; }" +
+                "#%prefix%-body { border-color: #444; }" +
+                "#%prefix%-header a { color: #eee; }" +
+                "#%prefix%-resizer { border-color: #666; }"
+      },
+      minimal: {
+        tabTemplate: "<a onclick='return %prefix%ToggleWindow();' href='%url%'>☰</a>",
+        windowTemplate: null,
+        styles: "#%prefix%-tab { background: #f8f8f8; border: 1px solid #ddd; padding: 8px 12px; }" +
+                "#%prefix%-header { background: #f0f0f0; }" +
+                "#%prefix%-window { border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; overflow: hidden; }"
+      }
+    };
+
+    var currentTheme = 'default';
     var injectorStyleElement = null;
 
     // Clean up existing injector
@@ -279,6 +324,19 @@
     function loadInjector() {
       // Clean up any existing injector
       cleanup();
+
+      // Set up global config for templates based on selected theme
+      var theme = themes[currentTheme] || themes.default;
+      window.serviceInjectorConfig = {};
+      if (theme.tabTemplate) {
+        window.serviceInjectorConfig.tabTemplate = theme.tabTemplate;
+      }
+      if (theme.windowTemplate) {
+        window.serviceInjectorConfig.windowTemplate = theme.windowTemplate;
+      }
+      if (theme.styles) {
+        window.serviceInjectorConfig.styles = theme.styles;
+      }
 
       // Build query string from currentConfig
       var params = [];
@@ -340,6 +398,23 @@
       currentConfig[configKey] = !currentConfig[configKey];
 
       // Reload injector with new config
+      loadInjector();
+    }
+
+    // Select theme
+    function selectTheme(button, themeName) {
+      // Update button selection UI
+      var groupContainer = document.querySelector('[data-group="theme"]');
+      var buttons = groupContainer.querySelectorAll('button');
+      for (var i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove('selected');
+      }
+      button.classList.add('selected');
+
+      // Store current theme
+      currentTheme = themeName;
+
+      // Reload injector with new theme
       loadInjector();
     }
 

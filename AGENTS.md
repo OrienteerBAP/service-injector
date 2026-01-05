@@ -130,6 +130,31 @@ injector.state.mobile = /(android|bb\d+|meego).../.test(userAgent);
 ### Animation System
 Custom animation using `setInterval` with configurable duration, delta function, and callbacks.
 
+### Template Configuration
+Templates (tab, window, styles) can be customized via global JS config or DOM elements:
+
+**Option 1: Global JS Config (define before loading injector.js)**
+```javascript
+window.serviceInjectorConfig = {
+  tabTemplate: "<a onclick='return siToggleWindow();'>Open</a>",
+  windowTemplate: "...",
+  styles: "#si-tab { background: blue; }"
+};
+```
+
+**Option 2: DOM Elements (using configured prefix, default "si")**
+```html
+<script type="text/template" id="si-tab-template">
+  <a onclick='return siToggleWindow();'>Custom Tab</a>
+</script>
+<style id="si-custom-styles">
+  #si-tab { background: blue; }
+</style>
+```
+
+Templates support `%prefix%` and `%url%` placeholders.
+Custom styles are APPENDED to default styles, allowing overrides.
+
 ## Common Tasks
 
 ### Adding a New Configuration Option
