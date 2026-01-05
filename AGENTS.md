@@ -16,7 +16,7 @@ This project has no build pipeline, test framework, or linting configuration. Th
 
 ### Running Tests
 There is no test framework configured. When adding features, test manually by:
-1. Creating an HTML file that loads `injector.js`
+1. Opening `index.html` in a browser (demo page with multiple configurations)
 2. Testing the floating tab/window functionality
 3. Verifying mobile device behavior (opens in new window)
 4. Testing drag and resize functionality
@@ -107,8 +107,19 @@ if(/^(\-|\+)?([0-9]+|Infinity)$/.test(val)) return Number(val);
 
 ### Configuration System
 The library supports two configuration methods:
-1. **Query string parameters**: Short names (e.g., `?p=right&o=100px`)
+1. **Query string parameters**: Short names (e.g., `?p=right&o=100px&url=https://example.com`)
 2. **Data attributes**: Long names (e.g., `data-position="left"`)
+
+Available configuration parameters:
+- `url` - Custom URL to load in the iframe (overrides default `saasUrl`)
+- `p` (position) - Tab position: left, right, top, bottom
+- `o` (offset) - Tab offset from edge (% or px)
+- `a` (animation) - Animation duration in ms
+- `ww`, `wh` - Window width/height
+- `wt`, `wb`, `wl`, `wr`, `wc` - Window positioning
+- `d` (draggable) - Enable/disable dragging
+- `r` (resizable) - Enable/disable resizing
+- `ht` (hide-tab) - Hide tab when window is open
 
 ### Mobile Detection
 Mobile devices are detected via user agent regex and open SaaS in a new window instead of iframe:

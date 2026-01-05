@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>service-injector Demo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #111;
+    }
+
+    header p {
+      color: #666;
+      font-size: 1rem;
+    }
+
+    .section {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #888;
+      margin-bottom: 12px;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #fff;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    button:hover {
+      background: #f0f0f0;
+      border-color: #ccc;
+    }
+
+    button:active {
+      background: #e5e5e5;
+      transform: translateY(1px);
+    }
+
+    button.preset {
+      background: linear-gradient(to bottom, #4a90d9, #357abd);
+      border-color: #357abd;
+      color: #fff;
+    }
+
+    button.preset:hover {
+      background: linear-gradient(to bottom, #5a9fe9, #4589cc);
+      border-color: #4589cc;
+    }
+
+    button.preset:active {
+      background: linear-gradient(to bottom, #357abd, #2a6298);
+    }
+
+    button.feature {
+      background: #fff5f5;
+      border-color: #ffcccc;
+      color: #c53030;
+    }
+
+    button.feature:hover {
+      background: #ffe5e5;
+      border-color: #ffaaaa;
+    }
+
+    .note {
+      margin-top: 24px;
+      padding: 16px;
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #92400e;
+    }
+
+    .note strong {
+      font-weight: 600;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: #4a90d9;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>service-injector Demo</h1>
+      <p>Click any button to load the floating window with different configurations</p>
+    </header>
+
+    <div class="section">
+      <div class="section-title">Tab Position</div>
+      <div class="button-group">
+        <button onclick="loadInjector({p: 'bottom', o: '80%'})">Bottom</button>
+        <button onclick="loadInjector({p: 'top', o: '80%'})">Top</button>
+        <button onclick="loadInjector({p: 'left', o: '50%'})">Left</button>
+        <button onclick="loadInjector({p: 'right', o: '50%'})">Right</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Window Size</div>
+      <div class="button-group">
+        <button onclick="loadInjector({ww: '300px', wh: '350px'})">Small (300x350)</button>
+        <button onclick="loadInjector({ww: '440px', wh: '550px'})">Medium (440x550)</button>
+        <button onclick="loadInjector({ww: '600px', wh: '700px'})">Large (600x700)</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Animation Speed</div>
+      <div class="button-group">
+        <button onclick="loadInjector({a: 0})">None (instant)</button>
+        <button onclick="loadInjector({a: 150})">Fast (150ms)</button>
+        <button onclick="loadInjector({a: 300})">Normal (300ms)</button>
+        <button onclick="loadInjector({a: 600})">Slow (600ms)</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Features</div>
+      <div class="button-group">
+        <button class="feature" onclick="loadInjector({d: false})">No Drag</button>
+        <button class="feature" onclick="loadInjector({r: false})">No Resize</button>
+        <button onclick="loadInjector({ht: true})">Hide Tab on Open</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Presets with Custom URLs</div>
+      <div class="button-group">
+        <button class="preset" onclick="loadInjector({url: 'https://en.wikipedia.org', p: 'right', o: '20%', ww: '500px', wh: '600px'})">Wikipedia</button>
+        <button class="preset" onclick="loadInjector({url: 'https://github.com', p: 'left', o: '30%', ww: '450px', wh: '550px'})">GitHub</button>
+        <button class="preset" onclick="loadInjector({url: 'https://example.com', p: 'bottom', o: '10%', ww: '400px', wh: '300px'})">Example.com</button>
+        <button class="preset" onclick="loadInjector({url: 'https://duckduckgo.com', p: 'top', o: '70%', ww: '550px', wh: '450px'})">DuckDuckGo</button>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Tip:</strong> After clicking a button, look for the floating tab on the edge of the screen. 
+      Click the tab to open the window. You can drag the window header and resize from the bottom-right corner.
+    </div>
+
+    <footer>
+      <a href="https://github.com/OrienteerDW/service-injector" target="_blank">View on GitHub</a>
+    </footer>
+  </div>
+
+  <script>
+    var injectorStyleElement = null;
+
+    function cleanup() {
+      // Remove existing injector root element
+      var root = document.getElementById('si-service-injector');
+      if (root) {
+        root.parentNode.removeChild(root);
+      }
+
+      // Remove existing script
+      var oldScript = document.getElementById('service-injector');
+      if (oldScript) {
+        oldScript.parentNode.removeChild(oldScript);
+      }
+
+      // Remove injector styles
+      if (injectorStyleElement && injectorStyleElement.parentNode) {
+        injectorStyleElement.parentNode.removeChild(injectorStyleElement);
+        injectorStyleElement = null;
+      }
+
+      // Also try to find and remove any orphaned injector styles
+      var styles = document.querySelectorAll('style');
+      for (var i = 0; i < styles.length; i++) {
+        if (styles[i].innerHTML.indexOf('#si-tab') !== -1) {
+          styles[i].parentNode.removeChild(styles[i]);
+        }
+      }
+    }
+
+    function loadInjector(config) {
+      // Clean up any existing injector
+      cleanup();
+
+      // Build query string from config
+      var params = [];
+      for (var key in config) {
+        if (config.hasOwnProperty(key)) {
+          params.push(key + '=' + encodeURIComponent(config[key]));
+        }
+      }
+      var queryString = params.length > 0 ? '?' + params.join('&') : '';
+
+      // Create and inject new script
+      var script = document.createElement('script');
+      script.id = 'service-injector';
+      script.src = 'injector.js' + queryString;
+      
+      // Track the style element that will be added
+      var styleCount = document.querySelectorAll('style').length;
+      script.onload = function() {
+        var newStyles = document.querySelectorAll('style');
+        if (newStyles.length > styleCount) {
+          injectorStyleElement = newStyles[newStyles.length - 1];
+        }
+      };
+
+      document.body.appendChild(script);
+    }
+
+    // Load default injector on page load
+    window.onload = function() {
+      loadInjector({});
+    };
+  </script>
+</body>
+</html>

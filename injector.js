@@ -21,6 +21,7 @@
 
 
   var clientConfig = {
+    url : null,
     p : "bottom",
     o : "80%",
     a : 300,
@@ -45,6 +46,7 @@
   }
 /*Dictionary of mapping extended name to configuration*/
   var configMapping = {
+    'url' : 'url',
     'position' : 'p',
 		'offset' : 'o',
 		'animation' : 'a',
@@ -123,7 +125,7 @@
               var kvp = args[i].split('=');
               var key = kvp[0];
               var value = kvp[1];
-              if(conf[key]) conf[key] = injector.parseValue(value);
+              if(key in conf) conf[key] = injector.parseValue(value);
             }
           }
         }
@@ -132,7 +134,7 @@
             if(configMapping[id]) {
               var key = configMapping[id];
               var value = script.dataset[id];
-              if(conf[key]) conf[key] = injector.parseValue(value);
+              if(key in conf) conf[key] = injector.parseValue(value);
             }
           }
         }
@@ -337,7 +339,7 @@
       if(s.style.display!='block') s.style.display = 'block';
     },
     initIframe : function () {
-      injector.state.iframe.src = saasUrl;
+      injector.state.iframe.src = injector.conf.url || saasUrl;
       injector.state.inited = true;
     },
     restorePosition : function (elm, pos) {
