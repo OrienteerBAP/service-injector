@@ -54,18 +54,18 @@
   var configMapping = {
     'url' : 'url',
     'position' : 'p',
-		'offset' : 'o',
-		'animation' : 'a',
-		'window-width' : 'ww',
-		'window-height' : 'wh',
-		'window-top' : 'wt',
-		'window-bottom' : 'wb',
-		'window-left' : 'wl',
-		'window-center' : 'wc',
-		'window-right' : 'wr',
-		'draggable' : 'd',
-		'resizable' : 'r',
-		'hide-tab' : 'ht',
+    'offset' : 'o',
+    'animation' : 'a',
+    'window-width' : 'ww',
+    'window-height' : 'wh',
+    'window-top' : 'wt',
+    'window-bottom' : 'wb',
+    'window-left' : 'wl',
+    'window-center' : 'wc',
+    'window-right' : 'wr',
+    'draggable' : 'd',
+    'resizable' : 'r',
+    'hide-tab' : 'ht'
   }
 
   /*Load custom templates from global config or DOM elements*/
@@ -227,7 +227,6 @@
       winElm.style.position = 'fixed';
 
       winElm.style.top = "100px";
-      // if( typeof conf.wc == 'undefined') winElm.style.display = 'none';
       if(conf.ww) winElm.style.width = conf.ww;
       if(conf.wh) winElm.style.height = conf.wh;
       if(conf.wt) winElm.style.top = conf.wt;
@@ -238,7 +237,7 @@
       rootElm.appendChild(winElm);
       injector.state.win = winElm;
       if( typeof conf.wc != 'undefined') {
-        winElm.style.left = ((screen.width - winElm.offsetWidth+conf.wc) / 2)+"px";
+        winElm.style.left = ((window.innerWidth - winElm.offsetWidth+conf.wc) / 2)+"px";
       }
       injector.savePositions();
       winElm.style.display = 'none';
@@ -360,6 +359,7 @@
       var header = document.getElementById(sp("%prefix%-header"));
       var body = document.getElementById(sp("%prefix%-body"));
       var iframe = document.getElementById(sp("%prefix%-iframe"));
+      if(!win || !header || !body || !iframe) return;
       body.style.height = (win.offsetHeight - header.offsetHeight-4)+"px";
       iframe.style.height = (win.offsetHeight - header.offsetHeight-15)+"px";
       iframe.style.width = (win.offsetWidth-3)+"px";
@@ -405,13 +405,15 @@
       injector.state.inited = true;
     },
     restorePosition : function (elm, pos) {
-      if(pos.left < 0 ) pos.left = 0;
-      if(pos.top < 0 ) pos.top = 0;
-      if(pos.left + pos.width > screen.availWidth) {
-        pos.left = screen.availWidth - pos.width;
+      var viewportWidth = window.innerWidth;
+      var viewportHeight = window.innerHeight;
+      if(pos.left < 0) pos.left = 0;
+      if(pos.top < 0) pos.top = 0;
+      if(pos.left + pos.width > viewportWidth) {
+        pos.left = viewportWidth - pos.width;
       }
-      if(pos.top + pos.height > screen.availHeight) {
-        pos.top = screen.availHeight - pos.height;
+      if(pos.top + pos.height > viewportHeight) {
+        pos.top = viewportHeight - pos.height;
       }
       elm.style.left = pos.left + "px";
       elm.style.top = pos.top + "px";

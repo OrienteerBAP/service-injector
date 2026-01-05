@@ -33,6 +33,7 @@ Set of parameters which can be populated from client side
 
 | Parameter | Long Name | Desciption |
 |-----------|-----------|------------|
+| url | url | Custom URL to load in the iframe |
 | p | position | Position of a tab: left, right, top, botton |
 | o | offset | Offset of a tab position. Can be in % or px |
 | a | animation | Type of animation to be used |
