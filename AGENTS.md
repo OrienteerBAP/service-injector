@@ -155,6 +155,23 @@ window.serviceInjectorConfig = {
 Templates support `%prefix%` and `%url%` placeholders.
 Custom styles are APPENDED to default styles, allowing overrides.
 
+### Programmatic Control
+The library exposes global functions for controlling the injector:
+
+- `siToggleWindow()` - Toggle the window open/closed state
+- `siDestroy()` - Completely remove the injector from the page:
+  - Removes all event listeners (mousewheel, mousemove, mouseup, touch events)
+  - Removes all DOM elements (root container, style element)
+  - Removes global functions (`siToggleWindow`, `siDestroy`)
+
+```javascript
+// Toggle window programmatically
+siToggleWindow();
+
+// Clean removal of injector
+siDestroy();
+```
+
 ## Common Tasks
 
 ### Adding a New Configuration Option

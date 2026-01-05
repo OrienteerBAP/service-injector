@@ -1,8 +1,14 @@
 !function() {
   /*Server side config*/
-  var prefix = "si"; //Usefull to support several injections per page
+  var prefix = "si"; //Useful to support several injections per page
   var siScriptId = "service-injector"; //Id of SCRIPT element which has in src this script
   var saasUrl = "https://orienteer.org";
+
+  /*Substitute prefix*/
+  function sp(str) {
+    return str.replace(/%prefix%/g, prefix).replace(/%url%/g, saasUrl);
+  }
+
   var tabTemplate = sp("<a onclick='return %prefix%ToggleWindow();' href='%url%'>Click me!</a>");
   var windowTemplate = sp("<div id='%prefix%-inner'>"+
                           "<div id='%prefix%-header'><a href='#' onclick='return %prefix%ToggleWindow();' style='cursor:pointer'>X</a></div>"+
@@ -60,11 +66,6 @@
 		'draggable' : 'd',
 		'resizable' : 'r',
 		'hide-tab' : 'ht',
-  }
-
-  /*Substitute prefix*/
-  function sp(str) {
-    return str.replace(/%prefix%/g, prefix).replace(/%url%/g, saasUrl);
   }
 
   /*Load custom templates from global config or DOM elements*/
@@ -135,7 +136,17 @@
       },
       mobile: null,
       drag: false,
-      resize: false
+      resize: false,
+      styleElement: null,
+      handlers: {
+        mousewheel: null,
+        DOMMouseScroll: null,
+        mousemove: null,
+        mouseup: null,
+        touchmove: null,
+        touchend: null,
+        touchcancel: null
+      }
     },
     conf : clientConfig,
     parseValue : function (val) {
@@ -172,7 +183,7 @@
           }
         }
         if(script.dataset) {
-          for(id in script.dataset) {
+          for(var id in script.dataset) {
             if(configMapping[id]) {
               var key = configMapping[id];
               var value = script.dataset[id];
@@ -185,6 +196,7 @@
       var styleElm = document.createElement("style");
       styleElm.innerHTML = injectorStyles;
       document.getElementsByTagName('head')[0].appendChild(styleElm);
+      injector.state.styleElement = styleElm;
 
       var rootElm = document.createElement('div');
       rootElm.setAttribute("id", sp("%prefix%-service-injector"));
@@ -240,6 +252,8 @@
           e.preventDefault();
         }
       }
+      injector.state.handlers.mousewheel = preventParentScrolling;
+      injector.state.handlers.DOMMouseScroll = preventParentScrolling;
       // IE9, Chrome, Safari, Opera
       document.addEventListener("mousewheel", preventParentScrolling, false);
     	// Firefox
@@ -317,6 +331,8 @@
               e.preventDefault();
             }
           };
+      injector.state.handlers.mousemove = moveHandler;
+      injector.state.handlers.touchmove = moveHandler;
       window.addEventListener("mousemove", moveHandler);
       window.addEventListener("touchmove", moveHandler);
       var stopHandler = function(e) {
@@ -328,12 +344,16 @@
           e.preventDefault();
         }
       };
+      injector.state.handlers.mouseup = stopHandler;
+      injector.state.handlers.touchend = stopHandler;
+      injector.state.handlers.touchcancel = stopHandler;
       window.addEventListener("mouseup", stopHandler);
       window.addEventListener("touchend", stopHandler);
       window.addEventListener("touchcancel", stopHandler);
     },
     exp : function () {
       window[sp("%prefix%ToggleWindow")] = injector.toggleWindow;
+      window[sp("%prefix%Destroy")] = injector.destroy;
     },
     adjustSizes : function (){
       var win = injector.state.win;
@@ -454,6 +474,43 @@
         return injector.expandWindow();
       } else {
         return injector.collapseWindow();
+      }
+    },
+    destroy : function () {
+      // Remove document event listeners
+      if(injector.state.handlers.mousewheel) {
+        document.removeEventListener("mousewheel", injector.state.handlers.mousewheel, false);
+      }
+      if(injector.state.handlers.DOMMouseScroll) {
+        document.removeEventListener("DOMMouseScroll", injector.state.handlers.DOMMouseScroll, false);
+      }
+
+      // Remove window event listeners
+      if(injector.state.handlers.mousemove) {
+        window.removeEventListener("mousemove", injector.state.handlers.mousemove);
+        window.removeEventListener("touchmove", injector.state.handlers.touchmove);
+      }
+      if(injector.state.handlers.mouseup) {
+        window.removeEventListener("mouseup", injector.state.handlers.mouseup);
+        window.removeEventListener("touchend", injector.state.handlers.touchend);
+        window.removeEventListener("touchcancel", injector.state.handlers.touchcancel);
+      }
+
+      // Remove DOM elements
+      if(injector.state.root && injector.state.root.parentNode) {
+        injector.state.root.parentNode.removeChild(injector.state.root);
+      }
+      if(injector.state.styleElement && injector.state.styleElement.parentNode) {
+        injector.state.styleElement.parentNode.removeChild(injector.state.styleElement);
+      }
+
+      // Remove global functions
+      try {
+        delete window[sp("%prefix%ToggleWindow")];
+        delete window[sp("%prefix%Destroy")];
+      } catch(e) {
+        window[sp("%prefix%ToggleWindow")] = undefined;
+        window[sp("%prefix%Destroy")] = undefined;
       }
     }
   };

@@ -125,3 +125,31 @@ Templates support these placeholders:
 | `#si-iframe` | The iframe element |
 | `#si-footer` | Window footer |
 | `#si-resizer` | Resize handle |
+
+## Programmatic Control
+
+The library exposes global functions for controlling the injector programmatically:
+
+| Function | Description |
+|----------|-------------|
+| `siToggleWindow()` | Toggle the window open/closed state |
+| `siDestroy()` | Completely remove the injector from the page |
+
+### Usage Examples
+
+```javascript
+// Toggle window open/closed
+siToggleWindow();
+
+// Completely remove the injector (cleanup)
+siDestroy();
+```
+
+### siDestroy() Details
+
+The `siDestroy()` function performs a complete cleanup:
+- Removes all event listeners (mousewheel, mousemove, mouseup, touch events)
+- Removes all DOM elements (root container, style element)
+- Removes global functions (`siToggleWindow`, `siDestroy`)
+
+This is useful when you need to dynamically remove the injector or reinitialize it with different configuration.

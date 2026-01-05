@@ -293,31 +293,33 @@
 
     // Clean up existing injector
     function cleanup() {
-      // Remove existing injector root element
-      var root = document.getElementById('si-service-injector');
-      if (root) {
-        root.parentNode.removeChild(root);
+      // Use library's destroy method if available
+      if (typeof window.siDestroy === 'function') {
+        window.siDestroy();
       }
 
-      // Remove existing script
+      // Remove existing script tag
       var oldScript = document.getElementById('service-injector');
       if (oldScript) {
         oldScript.parentNode.removeChild(oldScript);
       }
 
-      // Remove injector styles
-      if (injectorStyleElement && injectorStyleElement.parentNode) {
-        injectorStyleElement.parentNode.removeChild(injectorStyleElement);
-        injectorStyleElement = null;
+      // Fallback cleanup for any remaining elements
+      var root = document.getElementById('si-service-injector');
+      if (root) {
+        root.parentNode.removeChild(root);
       }
 
-      // Also try to find and remove any orphaned injector styles
+      // Remove any orphaned injector styles
       var styles = document.querySelectorAll('style');
       for (var i = 0; i < styles.length; i++) {
-        if (styles[i].innerHTML.indexOf('#si-tab') !== -1) {
+        if (styles[i].innerHTML.indexOf('#si-tab') !== -1 ||
+            styles[i].innerHTML.indexOf('#si-window') !== -1) {
           styles[i].parentNode.removeChild(styles[i]);
         }
       }
+
+      injectorStyleElement = null;
     }
 
     // Load injector with current configuration
