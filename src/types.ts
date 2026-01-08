@@ -1,4 +1,20 @@
 /**
+ * Dock side options for dockable windows.
+ */
+export type DockSide = 'left' | 'right' | 'top' | 'bottom';
+
+/**
+ * Stored body margins for restoration after undocking.
+ */
+export interface BodyMargins {
+  top: string;
+  right: string;
+  bottom: string;
+  left: string;
+  transition: string;
+}
+
+/**
  * Public configuration options using readable property names.
  * Used when instantiating ServiceInjector programmatically.
  */
@@ -31,6 +47,8 @@ export interface ServiceInjectorConfig {
   resizable?: boolean;
   /** Hide tab when window is open */
   hideTab?: boolean;
+  /** Enable window docking to viewport edges. true = all sides, array = specific sides only */
+  dockable?: boolean | DockSide[];
 }
 
 /**
@@ -70,6 +88,7 @@ export interface InternalConfig {
   d: boolean;
   r: boolean;
   ht: boolean;
+  dk: boolean | DockSide[];
 }
 
 /**
@@ -120,7 +139,16 @@ export interface InjectorState {
     touchmove: EventListener | null;
     touchend: EventListener | null;
     touchcancel: EventListener | null;
+    dblclick: EventListener | null;
   };
+  /** Current dock state: which side the window is docked to, or null if floating */
+  docked: DockSide | null;
+  /** Position before docking, used to restore on undock */
+  preDockPosition: Position | null;
+  /** Original body margins before docking, used to restore on undock */
+  originalBodyMargin: BodyMargins | null;
+  /** Flag indicating we're in the process of undocking via drag */
+  undocking: boolean;
 }
 
 /**

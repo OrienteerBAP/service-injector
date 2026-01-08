@@ -219,6 +219,7 @@ The `prepublishOnly` script automatically runs the build.
 
 ## Master Rules to Follow
 
+- Always update documentation if it's needed according to performed changes
 - Always commit changes after completing a task
 - Do not push to remote unless explicitly requested by the user
 - Run `npm run build` after making source changes to verify compilation

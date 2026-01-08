@@ -16,6 +16,16 @@ export const DEFAULT_SCRIPT_ID = 'service-injector';
 export const DEFAULT_SAAS_URL = 'https://orienteer.org';
 
 /**
+ * Dock threshold in pixels - how close to edge to trigger docking.
+ */
+export const DOCK_THRESHOLD = 20;
+
+/**
+ * Minimum screen width for docking to be enabled.
+ */
+export const DOCK_MIN_SCREEN_WIDTH = 768;
+
+/**
  * Default internal configuration values.
  */
 export const DEFAULT_CONFIG: InternalConfig = {
@@ -32,7 +42,8 @@ export const DEFAULT_CONFIG: InternalConfig = {
   wr: null,
   d: true,
   r: true,
-  ht: false
+  ht: false,
+  dk: false
 };
 
 /**
@@ -52,7 +63,8 @@ export const CONFIG_MAPPING: ConfigMapping = {
   'window-right': 'wr',
   'draggable': 'd',
   'resizable': 'r',
-  'hide-tab': 'ht'
+  'hide-tab': 'ht',
+  'dockable': 'dk'
 };
 
 /**
@@ -72,7 +84,8 @@ export const OPTIONS_TO_CONFIG: Record<string, keyof InternalConfig> = {
   windowRight: 'wr',
   draggable: 'd',
   resizable: 'r',
-  hideTab: 'ht'
+  hideTab: 'ht',
+  dockable: 'dk'
 };
 
 /**

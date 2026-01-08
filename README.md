@@ -19,6 +19,8 @@ Lightweight JavaScript library for SaaS providers to allow its services installa
 
 - **Interactive Window** — Draggable header and resizable corner with full touch event support. Both features can be toggled via configuration.
 
+- **Dockable Window** — When enabled, drag the window to any screen edge to dock it. The page content is pushed aside to make room. Undock by double-clicking the header or dragging away. Disabled on mobile and small screens (<768px).
+
 - **Fully Customizable** — Override tab template, window template, and styles without modifying source code.
 
 - **TypeScript Support** — Full TypeScript definitions included for excellent IDE support.
@@ -141,6 +143,7 @@ injector.install();
 | `draggable` | `boolean` | `true` | Enable window dragging |
 | `resizable` | `boolean` | `true` | Enable window resizing |
 | `hideTab` | `boolean` | `false` | Hide tab when window is open |
+| `dockable` | `boolean \| string[]` | `false` | Enable window docking to viewport edges. `true` = all sides, or array like `['left', 'right']` |
 | `prefix` | `string` | `'si'` | Element ID prefix |
 | `saasUrl` | `string` | `'https://orienteer.org'` | Default SaaS URL |
 | `tabTemplate` | `string` | (default) | Custom tab HTML template |
@@ -167,6 +170,7 @@ For script tag usage, use short parameter names:
 | `d` | `draggable` | `true` | Enable window dragging |
 | `r` | `resizable` | `true` | Enable window resizing |
 | `ht` | `hide-tab` | `false` | Hide tab when window is open |
+| `dk` | `dockable` | `false` | Enable window docking to viewport edges |
 
 ## Customizing Templates
 
@@ -228,6 +232,12 @@ When using the script tag, global functions are automatically exposed:
 // Toggle window open/closed
 siToggleWindow();
 
+// Dock window to a specific side
+siDock('right');  // 'left', 'right', 'top', 'bottom'
+
+// Undock window
+siUndock();
+
 // Completely remove the injector
 siDestroy();
 ```
@@ -235,6 +245,8 @@ siDestroy();
 With a custom prefix (e.g., `prefix: 'my'`):
 ```javascript
 myToggleWindow();
+myDock('left');
+myUndock();
 myDestroy();
 ```
 
@@ -247,6 +259,9 @@ injector.install();     // Mount to DOM
 injector.toggle();      // Toggle window
 injector.expand();      // Open window
 injector.collapse();    // Close window
+injector.dock('right'); // Dock to edge ('left', 'right', 'top', 'bottom')
+injector.undock();      // Undock from edge
+injector.isDocked();    // Get dock side or null if floating
 injector.destroy();     // Full cleanup
 injector.isOpen();      // Check if window is open
 injector.isMobile();    // Check if mobile device
@@ -280,6 +295,15 @@ injector.install();
 ## License
 
 Apache-2.0
+
+## Future Ideas
+
+Some potential features for future versions:
+
+- **Dock Preview** — Show a visual preview/highlight of the dock zone while dragging near an edge, before the user releases
+- **Dock Snap Animation** — Animated transition when snapping to dock zone
+- **Persist State** — Remember dock state, window position, and size across page loads (localStorage)
+- **Multiple Instances** — Better support for running multiple independent injectors on the same page
 
 ## Links
 

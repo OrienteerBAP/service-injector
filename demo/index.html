@@ -205,6 +205,7 @@
         <button class="toggle selected" onclick="toggleOption(this, 'd')">Draggable</button>
         <button class="toggle selected" onclick="toggleOption(this, 'r')">Resizable</button>
         <button class="toggle" onclick="toggleOption(this, 'ht')">Hide Tab</button>
+        <button class="toggle" onclick="toggleOption(this, 'dk')">Dockable</button>
       </div>
     </div>
 
@@ -232,7 +233,8 @@
     <div class="note">
       <strong>Tip:</strong> After selecting options, look for the floating tab on the edge of the screen. 
       Click the tab to open the window. You can drag the window header and resize from the bottom-right corner 
-      (if those features are enabled).
+      (if those features are enabled). When dockable is enabled, drag the window to any screen edge to dock it 
+      (pushes page content aside). Double-click the header or drag away to undock.
     </div>
 
     <footer>
@@ -251,6 +253,7 @@
       d: true,
       r: true,
       ht: false,
+      dk: false,
       url: null
     };
 

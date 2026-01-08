@@ -3,7 +3,8 @@ import type {
   InternalConfig,
   InjectorState,
   Position,
-  GlobalConfig
+  GlobalConfig,
+  DockSide
 } from './types';
 import {
   DEFAULT_PREFIX,
@@ -15,7 +16,9 @@ import {
   OFFSET_ORIENTATION,
   DEFAULT_TAB_TEMPLATE,
   DEFAULT_WINDOW_TEMPLATE,
-  DEFAULT_STYLES
+  DEFAULT_STYLES,
+  DOCK_THRESHOLD,
+  DOCK_MIN_SCREEN_WIDTH
 } from './defaults';
 import {
   substitutePrefix,
@@ -118,8 +121,14 @@ export class ServiceInjector {
         mouseup: null,
         touchmove: null,
         touchend: null,
-        touchcancel: null
-      }
+        touchcancel: null,
+        dblclick: null
+      },
+      // Dock-related state
+      docked: null,
+      preDockPosition: null,
+      originalBodyMargin: null,
+      undocking: false
     };
   }
 
@@ -128,6 +137,136 @@ export class ServiceInjector {
    */
   private sp(str: string): string {
     return substitutePrefix(str, this.prefix, this.config.url ?? this.saasUrl);
+  }
+
+  /**
+   * Get the list of allowed dock sides based on configuration.
+   * @returns Array of allowed dock sides, or empty array if docking is disabled
+   */
+  private getAllowedDockSides(): DockSide[] {
+    const dk = this.config.dk;
+    if (dk === false) {
+      return [];
+    }
+    if (dk === true) {
+      return ['left', 'right', 'top', 'bottom'];
+    }
+    return dk;
+  }
+
+  /**
+   * Check if docking is currently possible.
+   * Docking is disabled on mobile devices and screens smaller than DOCK_MIN_SCREEN_WIDTH.
+   * @returns true if docking is enabled and conditions are met
+   */
+  private canDock(): boolean {
+    if (this.state.mobile) {
+      return false;
+    }
+    if (window.innerWidth < DOCK_MIN_SCREEN_WIDTH) {
+      return false;
+    }
+    return this.getAllowedDockSides().length > 0;
+  }
+
+  /**
+   * Detect which dock zone (if any) a point is within.
+   * @param x - X coordinate (viewport)
+   * @param y - Y coordinate (viewport)
+   * @returns The dock side if within threshold, or null if not in any dock zone
+   */
+  private detectDockZone(x: number, y: number): DockSide | null {
+    if (!this.canDock()) {
+      return null;
+    }
+
+    const allowed = this.getAllowedDockSides();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Check each edge - priority: left, right, top, bottom
+    if (allowed.includes('left') && x <= DOCK_THRESHOLD) {
+      return 'left';
+    }
+    if (allowed.includes('right') && x >= vw - DOCK_THRESHOLD) {
+      return 'right';
+    }
+    if (allowed.includes('top') && y <= DOCK_THRESHOLD) {
+      return 'top';
+    }
+    if (allowed.includes('bottom') && y >= vh - DOCK_THRESHOLD) {
+      return 'bottom';
+    }
+
+    return null;
+  }
+
+  /**
+   * Save the current body margins to state for later restoration.
+   */
+  private saveBodyMargins(): void {
+    const bodyStyle = document.body.style;
+    this.state.originalBodyMargin = {
+      top: bodyStyle.marginTop || '',
+      right: bodyStyle.marginRight || '',
+      bottom: bodyStyle.marginBottom || '',
+      left: bodyStyle.marginLeft || '',
+      transition: bodyStyle.transition || ''
+    };
+  }
+
+  /**
+   * Apply a margin to the body element on a specific side.
+   * @param side - Which side to apply margin to
+   * @param size - The margin size (e.g., '440px')
+   */
+  private applyBodyMargin(side: DockSide, size: string): void {
+    const body = document.body;
+    const duration = this.config.a;
+
+    // Add transition for smooth animation
+    body.style.transition = `margin ${duration}ms ease-in-out`;
+
+    switch (side) {
+      case 'left':
+        body.style.marginLeft = size;
+        break;
+      case 'right':
+        body.style.marginRight = size;
+        break;
+      case 'top':
+        body.style.marginTop = size;
+        break;
+      case 'bottom':
+        body.style.marginBottom = size;
+        break;
+    }
+  }
+
+  /**
+   * Restore body margins to their original values.
+   */
+  private restoreBodyMargins(): void {
+    if (!this.state.originalBodyMargin) return;
+
+    const body = document.body;
+    const orig = this.state.originalBodyMargin;
+    const duration = this.config.a;
+
+    // Add transition for smooth animation
+    body.style.transition = `margin ${duration}ms ease-in-out`;
+
+    body.style.marginTop = orig.top;
+    body.style.marginRight = orig.right;
+    body.style.marginBottom = orig.bottom;
+    body.style.marginLeft = orig.left;
+
+    // Restore original transition after animation completes
+    setTimeout(() => {
+      body.style.transition = orig.transition;
+    }, duration);
+
+    this.state.originalBodyMargin = null;
   }
 
   /**
@@ -326,8 +465,45 @@ export class ServiceInjector {
       const header = getElementById(this.sp('%prefix%-header'));
       if (header) {
         const dragStartHandler = (e: MouseEvent | TouchEvent): void => {
-          this.state.drag = true;
           const p = extractPoint(e);
+
+          // If docked, start undocking process
+          if (this.state.docked) {
+            this.state.undocking = true;
+            // Restore pre-dock size but keep current position under cursor
+            const preDock = this.state.preDockPosition;
+            if (preDock && this.state.win) {
+              // Restore body margins immediately (no transition)
+              this.restoreBodyMargins();
+
+              // Reset window size to pre-dock dimensions
+              this.state.win.style.width = preDock.width + 'px';
+              this.state.win.style.height = preDock.height + 'px';
+
+              // Position window so cursor is in header center
+              const newLeft = p.x - preDock.width / 2;
+              const newTop = p.y - 15; // Roughly middle of header
+              this.state.win.style.left = newLeft + 'px';
+              this.state.win.style.top = newTop + 'px';
+              this.state.win.style.right = '';
+              this.state.win.style.bottom = '';
+
+              // Update winPosition to reflect new position
+              this.state.winPosition = {
+                left: newLeft,
+                top: newTop,
+                width: preDock.width,
+                height: preDock.height
+              };
+
+              this.state.docked = null;
+              this.state.preDockPosition = null;
+              this.updateDockedResizerCursor();
+              this.adjustSizes();
+            }
+          }
+
+          this.state.drag = true;
           drag.x = p.x;
           drag.y = p.y;
           drag.left = drag.x - (this.state.win?.offsetLeft ?? 0);
@@ -340,6 +516,15 @@ export class ServiceInjector {
         };
         header.addEventListener('mousedown', dragStartHandler as EventListener);
         header.addEventListener('touchstart', dragStartHandler as EventListener);
+
+        // Double-click on header to undock
+        const dblclickHandler = (): void => {
+          if (this.state.docked) {
+            this.undock();
+          }
+        };
+        header.addEventListener('dblclick', dblclickHandler);
+        this.state.handlers.dblclick = dblclickHandler as EventListener;
       }
     }
 
@@ -380,10 +565,15 @@ export class ServiceInjector {
         }
 
         if (this.state.resize) {
-          this.state.winPosition.width = drag.x - drag.width;
-          this.state.winPosition.height = drag.y - drag.height;
-          this.restorePosition(this.state.win!, this.state.winPosition);
-          this.adjustSizes();
+          // Handle docked resize (constrained direction)
+          if (this.state.docked) {
+            this.handleDockedResize(drag.x, drag.y);
+          } else {
+            this.state.winPosition.width = drag.x - drag.width;
+            this.state.winPosition.height = drag.y - drag.height;
+            this.restorePosition(this.state.win!, this.state.winPosition);
+            this.adjustSizes();
+          }
         }
 
         e.stopPropagation();
@@ -399,11 +589,23 @@ export class ServiceInjector {
     // Stop handler
     const stopHandler = (e: Event): void => {
       if (this.state.drag || this.state.resize) {
+        const wasDragging = this.state.drag;
         this.state.drag = false;
         this.state.resize = false;
+        this.state.undocking = false;
+
         if (this.state.iframe) {
           this.state.iframe.style.pointerEvents = '';
         }
+
+        // Check for dock zone on drag end (not when resizing)
+        if (wasDragging && !this.state.docked) {
+          const dockSide = this.detectDockZone(drag.x, drag.y);
+          if (dockSide) {
+            this.dock(dockSide);
+          }
+        }
+
         this.savePositions();
         e.stopPropagation();
         e.preventDefault();
@@ -419,6 +621,54 @@ export class ServiceInjector {
   }
 
   /**
+   * Handle resize while window is docked (constrained to single direction).
+   * @param x - Current pointer X position
+   * @param y - Current pointer Y position
+   */
+  private handleDockedResize(x: number, y: number): void {
+    const win = this.state.win;
+    if (!win) return;
+
+    const docked = this.state.docked;
+    const winPos = this.state.winPosition;
+
+    switch (docked) {
+      case 'left':
+        // Can only resize width (expand to the right)
+        winPos.width = x - win.offsetLeft;
+        break;
+      case 'right':
+        // Can only resize width (expand to the left)
+        winPos.width = win.offsetLeft + win.offsetWidth - x;
+        win.style.left = x + 'px';
+        winPos.left = x;
+        break;
+      case 'top':
+        // Can only resize height (expand downward)
+        winPos.height = y - win.offsetTop;
+        break;
+      case 'bottom':
+        // Can only resize height (expand upward)
+        winPos.height = win.offsetTop + win.offsetHeight - y;
+        win.style.top = y + 'px';
+        winPos.top = y;
+        break;
+    }
+
+    win.style.width = winPos.width + 'px';
+    win.style.height = winPos.height + 'px';
+
+    // Update body margin to match new size
+    if (docked === 'left' || docked === 'right') {
+      this.applyBodyMargin(docked, winPos.width + 'px');
+    } else if (docked === 'top' || docked === 'bottom') {
+      this.applyBodyMargin(docked, winPos.height + 'px');
+    }
+
+    this.adjustSizes();
+  }
+
+  /**
    * Expose global functions for backwards compatibility.
    */
   private exposeGlobals(): void {
@@ -426,11 +676,17 @@ export class ServiceInjector {
 
     const toggleName = makeFunctionName(this.prefix, 'ToggleWindow');
     const destroyName = makeFunctionName(this.prefix, 'Destroy');
+    const dockName = makeFunctionName(this.prefix, 'Dock');
+    const undockName = makeFunctionName(this.prefix, 'Undock');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any)[toggleName] = () => this.toggle();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any)[destroyName] = () => this.destroy();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any)[dockName] = (side: DockSide) => this.dock(side);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any)[undockName] = () => this.undock();
   }
 
   /**
@@ -441,17 +697,27 @@ export class ServiceInjector {
 
     const toggleName = makeFunctionName(this.prefix, 'ToggleWindow');
     const destroyName = makeFunctionName(this.prefix, 'Destroy');
+    const dockName = makeFunctionName(this.prefix, 'Dock');
+    const undockName = makeFunctionName(this.prefix, 'Undock');
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (window as any)[toggleName];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (window as any)[destroyName];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any)[dockName];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any)[undockName];
     } catch {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any)[toggleName] = undefined;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any)[destroyName] = undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any)[dockName] = undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any)[undockName] = undefined;
     }
   }
 
@@ -650,6 +916,195 @@ export class ServiceInjector {
   }
 
   /**
+   * Check if the window is currently docked.
+   * @returns The dock side if docked, or null if floating
+   */
+  isDocked(): DockSide | null {
+    return this.state.docked;
+  }
+
+  /**
+   * Dock the window to a specific edge of the viewport.
+   * When docked, the page content is pushed aside by adding a margin to the body.
+   * 
+   * @param side - The edge to dock to ('left', 'right', 'top', 'bottom')
+   * @returns this instance for chaining
+   */
+  dock(side: DockSide): this {
+    if (!this.canDock()) {
+      console.warn('service-injector: Docking not available (mobile or screen too small)');
+      return this;
+    }
+
+    const allowed = this.getAllowedDockSides();
+    if (!allowed.includes(side)) {
+      console.warn(`service-injector: Docking to '${side}' not allowed by configuration`);
+      return this;
+    }
+
+    if (this.state.docked === side) {
+      // Already docked to this side
+      return this;
+    }
+
+    const win = this.state.win;
+    if (!win) return this;
+
+    // If already docked elsewhere, undock first (instant)
+    if (this.state.docked) {
+      this.restoreBodyMargins();
+      this.state.docked = null;
+    }
+
+    // Save current position for restoration on undock
+    this.savePositions();
+    this.state.preDockPosition = { ...this.state.winPosition };
+
+    // Save body margins for restoration
+    this.saveBodyMargins();
+
+    // Determine the size of margin to apply (window width for left/right, height for top/bottom)
+    const winWidth = win.offsetWidth;
+    const winHeight = win.offsetHeight;
+    const marginSize = (side === 'left' || side === 'right') ? winWidth + 'px' : winHeight + 'px';
+
+    // Apply body margin (with transition)
+    this.applyBodyMargin(side, marginSize);
+
+    // Position window at the edge (fixed position)
+    const duration = this.config.a;
+    win.style.transition = `all ${duration}ms ease-in-out`;
+
+    switch (side) {
+      case 'left':
+        win.style.left = '0px';
+        win.style.top = '0px';
+        win.style.right = '';
+        win.style.bottom = '';
+        win.style.height = '100vh';
+        break;
+      case 'right':
+        win.style.right = '0px';
+        win.style.top = '0px';
+        win.style.left = '';
+        win.style.bottom = '';
+        win.style.height = '100vh';
+        break;
+      case 'top':
+        win.style.top = '0px';
+        win.style.left = '0px';
+        win.style.right = '';
+        win.style.bottom = '';
+        win.style.width = '100vw';
+        break;
+      case 'bottom':
+        win.style.bottom = '0px';
+        win.style.left = '0px';
+        win.style.right = '';
+        win.style.top = '';
+        win.style.width = '100vw';
+        break;
+    }
+
+    // Clear transition after animation
+    setTimeout(() => {
+      win.style.transition = '';
+      this.adjustSizes();
+      this.savePositions();
+    }, duration);
+
+    // Hide tab when docked
+    if (this.state.tab) {
+      this.state.tab.style.display = 'none';
+    }
+
+    this.state.docked = side;
+    this.updateDockedResizerCursor();
+
+    return this;
+  }
+
+  /**
+   * Undock the window and restore it to its pre-dock position.
+   * Also restores the original body margins.
+   * 
+   * @returns this instance for chaining
+   */
+  undock(): this {
+    if (!this.state.docked) {
+      return this;
+    }
+
+    const win = this.state.win;
+    if (!win) return this;
+
+    const duration = this.config.a;
+    const preDock = this.state.preDockPosition;
+
+    // Restore body margins
+    this.restoreBodyMargins();
+
+    // Animate window back to pre-dock position
+    win.style.transition = `all ${duration}ms ease-in-out`;
+
+    // Reset full-screen dimensions
+    win.style.width = preDock ? preDock.width + 'px' : this.config.ww;
+    win.style.height = preDock ? preDock.height + 'px' : this.config.wh;
+
+    if (preDock) {
+      win.style.left = preDock.left + 'px';
+      win.style.top = preDock.top + 'px';
+      win.style.right = '';
+      win.style.bottom = '';
+    }
+
+    // Clear transition after animation
+    setTimeout(() => {
+      win.style.transition = '';
+      this.adjustSizes();
+      this.savePositions();
+    }, duration);
+
+    this.state.docked = null;
+    this.state.preDockPosition = null;
+    this.state.undocking = false;
+    this.updateDockedResizerCursor();
+
+    return this;
+  }
+
+  /**
+   * Update the resizer cursor based on dock state.
+   * When docked, only allow resizing in the available direction.
+   */
+  private updateDockedResizerCursor(): void {
+    const resizer = getElementById(this.sp('%prefix%-resizer'));
+    if (!resizer) return;
+
+    const docked = this.state.docked;
+    if (!docked) {
+      resizer.style.cursor = 'se-resize';
+      return;
+    }
+
+    // When docked, constrain resize direction
+    switch (docked) {
+      case 'left':
+        resizer.style.cursor = 'e-resize';
+        break;
+      case 'right':
+        resizer.style.cursor = 'w-resize';
+        break;
+      case 'top':
+        resizer.style.cursor = 's-resize';
+        break;
+      case 'bottom':
+        resizer.style.cursor = 'n-resize';
+        break;
+    }
+  }
+
+  /**
    * Get current configuration (readonly).
    * @returns The internal configuration object
    */
@@ -671,6 +1126,11 @@ export class ServiceInjector {
    */
   destroy(): void {
     if (!this.installed) return;
+
+    // Restore body margins if currently docked
+    if (this.state.docked) {
+      this.restoreBodyMargins();
+    }
 
     // Remove document event listeners
     if (this.state.handlers.mousewheel) {
@@ -695,6 +1155,14 @@ export class ServiceInjector {
     }
     if (this.state.handlers.touchcancel) {
       window.removeEventListener('touchcancel', this.state.handlers.touchcancel);
+    }
+
+    // Remove dblclick handler from header if it exists
+    if (this.state.handlers.dblclick) {
+      const header = getElementById(this.sp('%prefix%-header'));
+      if (header) {
+        header.removeEventListener('dblclick', this.state.handlers.dblclick);
+      }
     }
 
     // Remove DOM elements
