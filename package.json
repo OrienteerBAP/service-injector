@@ -1,0 +1,53 @@
+{
+  "name": "service-injector",
+  "version": "1.0.0",
+  "description": "Lightweight library for SaaS providers to embed services on client websites as a floating tab/window with iframe integration",
+  "author": "OrienteerBAP",
+  "license": "Apache-2.0",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "browser": "./dist/index.iife.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "saas",
+    "widget",
+    "floating-tab",
+    "iframe",
+    "embed",
+    "inject",
+    "popup",
+    "window",
+    "chat-widget",
+    "floating-window",
+    "service-widget",
+    "vanilla-js",
+    "no-dependencies"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OrienteerBAP/service-injector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OrienteerBAP/service-injector/issues"
+  },
+  "homepage": "https://github.com/OrienteerBAP/service-injector#readme",
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  }
+}

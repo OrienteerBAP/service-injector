@@ -1,0 +1,29 @@
+# Source files (dist is published)
+src/
+
+# Demo
+demo/
+
+# Development files
+tsconfig.json
+tsup.config.ts
+AGENTS.md
+
+# IDE
+.idea/
+.vscode/
+
+# Git
+.git/
+.gitignore
+
+# Test
+coverage/
+*.test.ts
+*.spec.ts
+
+# OS
+.DS_Store
+
+# Old legacy file
+injector.js
