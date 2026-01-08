@@ -1,4 +1,5 @@
 # service-injector
+
 Lightweight JavaScript library for SaaS providers to allow its services installation on clients' sites.
 
 ## Use Case
@@ -8,121 +9,186 @@ Lightweight JavaScript library for SaaS providers to allow its services installa
 
 ## Features
 
-- **Zero Dependencies** — Pure vanilla JavaScript (ES5) with no jQuery, React, or other libraries required. Works on any website regardless of tech stack.
-  ```html
-  <script id="service-injector" src="https://yoursite.com/injector.js"></script>
-  ```
+- **Zero Dependencies** — Pure vanilla JavaScript with no jQuery, React, or other libraries required. Works on any website regardless of tech stack.
 
-- **Drop-in Configuration** — Configure behavior via query string parameters or data attributes. No coding required for your clients.
-  ```html
-  <!-- Query parameters -->
-  <script id="service-injector" src="injector.js?p=right&o=100px&ww=500px"></script>
-  
-  <!-- Or data attributes -->
-  <script id="service-injector" src="injector.js" data-position="right" data-offset="100px"></script>
-  ```
+- **Multiple Installation Options** — Use as npm package with ES modules, CommonJS, or as a simple script tag for vanilla JS websites.
+
+- **Drop-in Configuration** — Configure behavior via query string parameters, data attributes, or programmatic API. No coding required for basic usage.
 
 - **Mobile-Aware** — Automatically detects mobile devices and opens SaaS in a new browser window instead of an iframe for optimal UX.
 
 - **Interactive Window** — Draggable header and resizable corner with full touch event support. Both features can be toggled via configuration.
-  ```html
-  <script id="service-injector" src="injector.js?d=true&r=true"></script>
-  ```
 
-- **Fully Customizable** — Override tab template, window template, and styles without modifying source code. Use global JS config or DOM elements.
-  ```html
-  <script>
-    window.serviceInjectorConfig = {
-      tabTemplate: "<a onclick='return siToggleWindow();'>Support</a>",
-      styles: "#si-tab { background: #4a90d9; color: white; }"
-    };
-  </script>
-  <script id="service-injector" src="injector.js"></script>
-  ```
+- **Fully Customizable** — Override tab template, window template, and styles without modifying source code.
 
-## Getting Started
+- **TypeScript Support** — Full TypeScript definitions included for excellent IDE support.
 
-1. Get [injector.js](https://raw.githubusercontent.com/OrienteerDW/service-injector/gh-pages/injector.js) from [our GitHub repository](https://github.com/OrienteerDW/service-injector)
-2. Adjust it for your needs:
-   * URL of your SaaS
-   * Window style and design
-   * Window behavior
-3. Host the modified JS file on your SaaS
-4. Provide your users with instructions on how to install your service on their sites.
+## Installation
 
-## Configurations
+### npm (Recommended for modern projects)
 
-### Client side
+```bash
+npm install service-injector
+```
 
-Set of parameters which can be populated from client side
+### CDN (For vanilla JS websites)
 
-| Parameter | Long Name | Default | Description |
-|-----------|-----------|---------|-------------|
-| url | url | null | Custom URL to load in the iframe |
-| p | position | bottom | Position of a tab: left, right, top, bottom |
-| o | offset | 80% | Offset of a tab position. Can be in % or px |
-| a | animation | 300 | Animation duration in milliseconds |
-| ww | window-width | 440px | Initial width of a window. Can be % or px |
-| wh | window-height | 550px | Initial height of a window. Can be % or px |
-| wt | window-top | 100px | Initial top position |
-| wb | window-bottom | null | Initial bottom window position |
-| wl | window-left | null | Initial left window position |
-| wc | window-center | 0 | Initial center position of a window |
-| wr | window-right | null | Initial right window position |
-| d | draggable | true | Is window draggable |
-| r | resizable | true | Is window resizable |
-| ht | hide-tab | false | Hide tab when window is shown |
-
-Parameters can be populated by the following ways:
-
-1. Query string parameters:
 ```html
-<script id='service-injector' src='https://yoursite.com/injector.js?p=right&o=100px'>
+<!-- unpkg -->
+<script src="https://unpkg.com/service-injector/dist/index.iife.js"></script>
+
+<!-- jsDelivr -->
+<script src="https://cdn.jsdelivr.net/npm/service-injector/dist/index.iife.js"></script>
+```
+
+## Usage
+
+### Vanilla JavaScript (Script Tag) — Zero Config
+
+The simplest way to use service-injector. Just add the script tag and it auto-installs:
+
+```html
+<!-- Basic usage - auto-installs with defaults -->
+<script id="service-injector" src="https://unpkg.com/service-injector/dist/index.iife.js"></script>
+```
+
+**With query string configuration:**
+
+```html
+<script id="service-injector" 
+        src="https://unpkg.com/service-injector/dist/index.iife.js?p=right&o=100px&url=https://my-saas.com">
 </script>
 ```
 
-2. Data attributes:
+**With data attributes:**
+
 ```html
-<script id='service-injector' src='https://yoursite.com/injector.js' data-position='left' data-offset='100px'>
+<script id="service-injector" 
+        src="https://unpkg.com/service-injector/dist/index.iife.js"
+        data-position="left"
+        data-offset="50%"
+        data-url="https://my-saas.com">
 </script>
 ```
 
-### Service side
+### ES Modules (Modern JavaScript)
 
-Set of parameters to be configured in script itself for proper working and adjustment with your SaaS
+```javascript
+import { ServiceInjector } from 'service-injector';
 
-| Parameter | Desciption |
-|-----------|------------|
-| url | url to open within iframe |
-| tabTemplate | Tab template to be used to display a tab |
-| windowTemplate | Window template to be used to display a floating window: wrapper over your iframe |
+const injector = new ServiceInjector({
+  saasUrl: 'https://my-saas.com',
+  position: 'right',
+  offset: '100px',
+  windowWidth: '500px',
+  windowHeight: '600px',
+  draggable: true,
+  resizable: true,
+  prefix: 'my-widget'  // Custom prefix for element IDs
+});
 
-## Customizing Templates
+injector.install();
 
-You can customize the tab appearance, window structure, and styles without modifying the library source code.
+// Later, to control programmatically:
+injector.toggle();    // Toggle window open/closed
+injector.expand();    // Open window
+injector.collapse();  // Close window
+injector.destroy();   // Clean up completely
+```
 
-### Using Global Configuration
+### CommonJS (Node.js)
 
-Define `window.serviceInjectorConfig` before loading the library:
+```javascript
+const { ServiceInjector } = require('service-injector');
+
+const injector = new ServiceInjector({
+  saasUrl: 'https://my-saas.com',
+  position: 'bottom'
+});
+
+injector.install();
+```
+
+### With Global Config (Backwards Compatible)
 
 ```html
 <script>
   window.serviceInjectorConfig = {
-    tabTemplate: "<a onclick='return siToggleWindow();' href='#'>🚀 Open Panel</a>",
+    tabTemplate: "<a onclick='return siToggleWindow();'>Support</a>",
+    styles: "#si-tab { background: #4a90d9; color: white; }"
+  };
+</script>
+<script id="service-injector" src="https://unpkg.com/service-injector/dist/index.iife.js"></script>
+```
+
+## Configuration Options
+
+### Programmatic API Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | `null` | Custom URL to load in the iframe |
+| `position` | `string` | `'bottom'` | Tab position: `'left'`, `'right'`, `'top'`, `'bottom'` |
+| `offset` | `string` | `'80%'` | Tab offset from edge (e.g., `'80%'`, `'100px'`) |
+| `animation` | `number` | `300` | Animation duration in milliseconds |
+| `windowWidth` | `string` | `'440px'` | Window width |
+| `windowHeight` | `string` | `'550px'` | Window height |
+| `windowTop` | `string` | `'100px'` | Window top position |
+| `windowBottom` | `string` | `null` | Window bottom position |
+| `windowLeft` | `string` | `null` | Window left position |
+| `windowCenter` | `number` | `0` | Window center offset (0 = centered) |
+| `windowRight` | `string` | `null` | Window right position |
+| `draggable` | `boolean` | `true` | Enable window dragging |
+| `resizable` | `boolean` | `true` | Enable window resizing |
+| `hideTab` | `boolean` | `false` | Hide tab when window is open |
+| `prefix` | `string` | `'si'` | Element ID prefix |
+| `saasUrl` | `string` | `'https://orienteer.org'` | Default SaaS URL |
+| `tabTemplate` | `string` | (default) | Custom tab HTML template |
+| `windowTemplate` | `string` | (default) | Custom window HTML template |
+| `styles` | `string` | `''` | Additional CSS styles |
+
+### Query String / Data Attribute Parameters
+
+For script tag usage, use short parameter names:
+
+| Parameter | Long Name | Default | Description |
+|-----------|-----------|---------|-------------|
+| `url` | `url` | `null` | Custom URL to load in the iframe |
+| `p` | `position` | `'bottom'` | Tab position: left, right, top, bottom |
+| `o` | `offset` | `'80%'` | Tab offset from edge (% or px) |
+| `a` | `animation` | `300` | Animation duration in milliseconds |
+| `ww` | `window-width` | `'440px'` | Window width |
+| `wh` | `window-height` | `'550px'` | Window height |
+| `wt` | `window-top` | `'100px'` | Window top position |
+| `wb` | `window-bottom` | `null` | Window bottom position |
+| `wl` | `window-left` | `null` | Window left position |
+| `wc` | `window-center` | `0` | Window center offset |
+| `wr` | `window-right` | `null` | Window right position |
+| `d` | `draggable` | `true` | Enable window dragging |
+| `r` | `resizable` | `true` | Enable window resizing |
+| `ht` | `hide-tab` | `false` | Hide tab when window is open |
+
+## Customizing Templates
+
+### Using Global Configuration
+
+```html
+<script>
+  window.serviceInjectorConfig = {
+    tabTemplate: "<a onclick='return siToggleWindow();' href='#'>Open Panel</a>",
+    windowTemplate: "...", // Custom window HTML
     styles: "#si-tab { background: #4a90d9; color: white; border-radius: 8px; }"
   };
 </script>
-<script id="service-injector" src="injector.js"></script>
+<script id="service-injector" src="https://unpkg.com/service-injector/dist/index.iife.js"></script>
 ```
 
 ### Using DOM Elements
 
-Alternatively, define templates using script/style elements with specific IDs:
-
 ```html
 <!-- Custom tab template -->
 <script type="text/template" id="si-tab-template">
-  <a onclick='return siToggleWindow();' href='#'>🚀 Open Panel</a>
+  <a onclick='return siToggleWindow();' href='#'>Open Panel</a>
 </script>
 
 <!-- Custom styles (appended to defaults) -->
@@ -131,10 +197,10 @@ Alternatively, define templates using script/style elements with specific IDs:
   #si-header { background: #357abd; color: white; }
 </style>
 
-<script id="service-injector" src="injector.js"></script>
+<script id="service-injector" src="https://unpkg.com/service-injector/dist/index.iife.js"></script>
 ```
 
-### Available Placeholders
+### Template Placeholders
 
 Templates support these placeholders:
 - `%prefix%` - Element ID prefix (default: "si")
@@ -154,28 +220,69 @@ Templates support these placeholders:
 
 ## Programmatic Control
 
-The library exposes global functions for controlling the injector programmatically:
+### Global Functions (Script Tag Usage)
 
-| Function | Description |
-|----------|-------------|
-| `siToggleWindow()` | Toggle the window open/closed state |
-| `siDestroy()` | Completely remove the injector from the page |
-
-### Usage Examples
+When using the script tag, global functions are automatically exposed:
 
 ```javascript
 // Toggle window open/closed
 siToggleWindow();
 
-// Completely remove the injector (cleanup)
+// Completely remove the injector
 siDestroy();
 ```
 
-### siDestroy() Details
+With a custom prefix (e.g., `prefix: 'my'`):
+```javascript
+myToggleWindow();
+myDestroy();
+```
 
-The `siDestroy()` function performs a complete cleanup:
-- Removes all event listeners (mousewheel, mousemove, mouseup, touch events)
-- Removes all DOM elements (root container, style element)
-- Removes global functions (`siToggleWindow`, `siDestroy`)
+### ServiceInjector Instance Methods
 
-This is useful when you need to dynamically remove the injector or reinitialize it with different configuration.
+```javascript
+const injector = new ServiceInjector(options);
+
+injector.install();     // Mount to DOM
+injector.toggle();      // Toggle window
+injector.expand();      // Open window
+injector.collapse();    // Close window
+injector.destroy();     // Full cleanup
+injector.isOpen();      // Check if window is open
+injector.isMobile();    // Check if mobile device
+injector.getConfig();   // Get current configuration
+injector.getPrefix();   // Get the prefix
+```
+
+## TypeScript Support
+
+Full TypeScript definitions are included:
+
+```typescript
+import { ServiceInjector, ServiceInjectorOptions, ServiceInjectorConfig } from 'service-injector';
+
+const options: ServiceInjectorOptions = {
+  saasUrl: 'https://my-saas.com',
+  position: 'right',
+  draggable: true
+};
+
+const injector = new ServiceInjector(options);
+injector.install();
+```
+
+## Browser Support
+
+- Chrome, Firefox, Safari, Edge (modern versions)
+- IE11 (with appropriate polyfills)
+- Mobile browsers (iOS Safari, Android Chrome)
+
+## License
+
+Apache-2.0
+
+## Links
+
+- [GitHub Repository](https://github.com/OrienteerBAP/service-injector)
+- [npm Package](https://www.npmjs.com/package/service-injector)
+- [Demo](https://orienteerbap.github.io/service-injector/demo/)
