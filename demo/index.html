@@ -322,6 +322,20 @@
       injectorStyleElement = null;
     }
 
+    // Determine script URL based on environment (local vs deployed)
+    function getScriptUrl() {
+      var isLocal = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.protocol === 'file:';
+      
+      if (isLocal) {
+        return '../dist/index.iife.js';
+      } else {
+        // Use CDN for deployed demo
+        return 'https://unpkg.com/service-injector/dist/index.iife.js';
+      }
+    }
+
     // Load injector with current configuration
     function loadInjector() {
       // Clean up any existing injector
@@ -352,7 +366,7 @@
       // Create and inject new script
       var script = document.createElement('script');
       script.id = 'service-injector';
-      script.src = '../dist/index.iife.js' + queryString;
+      script.src = getScriptUrl() + queryString;
       
       // Track the style element that will be added
       var styleCount = document.querySelectorAll('style').length;
