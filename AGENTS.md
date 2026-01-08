@@ -38,6 +38,14 @@ service-injector/
 │   └── *.map                 # Source maps
 ├── demo/
 │   └── index.html            # Demo page
+├── docs/                     # Documentation
+│   ├── README.md             # Overview and navigation
+│   ├── installation.md       # Installation methods
+│   ├── configuration.md      # All configuration options
+│   ├── customization.md      # Templates, styles, theming
+│   ├── docking.md            # Dockable feature
+│   ├── api.md                # Programmatic API reference
+│   └── mobile.md             # Mobile behavior
 ├── package.json
 ├── tsconfig.json
 ├── tsup.config.ts
@@ -181,7 +189,8 @@ const tabTemplate = "<a onclick='return %prefix%ToggleWindow();'>Open</a>";
 4. Add mapping in `CONFIG_MAPPING` (for script tag support)
 5. Add mapping in `OPTIONS_TO_CONFIG` (for programmatic API)
 6. Handle the option in `ServiceInjector.install()`
-7. Update README.md documentation
+7. Update documentation in `docs/configuration.md`
+8. Update `docs/api.md` if adding new methods
 
 ### Modifying Window Behavior
 
@@ -216,6 +225,22 @@ npm publish
 ```
 
 The `prepublishOnly` script automatically runs the build.
+
+## Documentation
+
+Documentation lives in the `docs/` folder:
+
+| File | Content |
+|------|---------|
+| `docs/README.md` | Overview and navigation hub |
+| `docs/installation.md` | npm, CDN, script tag, self-hosting |
+| `docs/configuration.md` | All configuration options |
+| `docs/customization.md` | Templates, styles, theming |
+| `docs/docking.md` | Dockable feature deep-dive |
+| `docs/api.md` | Programmatic API reference |
+| `docs/mobile.md` | Mobile device behavior |
+
+**Important:** When adding or modifying features, always update the relevant documentation files. Keep documentation in sync with code changes. The docs are the primary reference for users.
 
 ## Master Rules to Follow
 
