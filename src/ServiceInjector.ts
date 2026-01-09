@@ -19,7 +19,8 @@ import {
   DEFAULT_WINDOW_TEMPLATE,
   DEFAULT_STYLES,
   DOCK_THRESHOLD,
-  DOCK_MIN_SCREEN_WIDTH
+  DOCK_MIN_SCREEN_WIDTH,
+  UNDOCK_DRAG_THRESHOLD
 } from './defaults';
 import {
   substitutePrefix,
@@ -351,6 +352,48 @@ export class ServiceInjector {
   }
 
   /**
+   * Perform the actual undock operation during drag.
+   * Restores window to pre-dock size and positions it under the cursor.
+   * @param cursorX - Current cursor X position
+   * @param cursorY - Current cursor Y position
+   */
+  private performUndock(cursorX: number, cursorY: number): void {
+    const preDock = this.state.preDockPosition;
+    const win = this.state.win;
+    
+    if (!preDock || !win) return;
+
+    // Restore body margins immediately (no transition)
+    this.restoreBodyMargins();
+
+    // Reset window size to pre-dock dimensions
+    win.style.width = preDock.width + 'px';
+    win.style.height = preDock.height + 'px';
+
+    // Position window so cursor is in header center
+    const newLeft = cursorX - preDock.width / 2;
+    const newTop = cursorY - 15; // Roughly middle of header
+    win.style.left = newLeft + 'px';
+    win.style.top = newTop + 'px';
+    win.style.right = '';
+    win.style.bottom = '';
+
+    // Update winPosition to reflect new position
+    this.state.winPosition = {
+      left: newLeft,
+      top: newTop,
+      width: preDock.width,
+      height: preDock.height
+    };
+
+    this.state.docked = null;
+    this.state.preDockPosition = null;
+    this.state.undocking = false;
+    this.updateDockedResizerCursor();
+    this.adjustSizes();
+  }
+
+  /**
    * Load custom templates from global config or DOM elements.
    */
   private loadCustomTemplates(): void {
@@ -556,43 +599,16 @@ export class ServiceInjector {
         const dragStartHandler = (e: MouseEvent | TouchEvent): void => {
           const p = extractPoint(e);
 
-          // If docked, start undocking process
+          // If docked, don't undock immediately - wait for actual drag movement
+          // Set undocking flag to indicate we're in potential undock state
           if (this.state.docked) {
             this.state.undocking = true;
-            // Restore pre-dock size but keep current position under cursor
-            const preDock = this.state.preDockPosition;
-            if (preDock && this.state.win) {
-              // Restore body margins immediately (no transition)
-              this.restoreBodyMargins();
-
-              // Reset window size to pre-dock dimensions
-              this.state.win.style.width = preDock.width + 'px';
-              this.state.win.style.height = preDock.height + 'px';
-
-              // Position window so cursor is in header center
-              const newLeft = p.x - preDock.width / 2;
-              const newTop = p.y - 15; // Roughly middle of header
-              this.state.win.style.left = newLeft + 'px';
-              this.state.win.style.top = newTop + 'px';
-              this.state.win.style.right = '';
-              this.state.win.style.bottom = '';
-
-              // Update winPosition to reflect new position
-              this.state.winPosition = {
-                left: newLeft,
-                top: newTop,
-                width: preDock.width,
-                height: preDock.height
-              };
-
-              this.state.docked = null;
-              this.state.preDockPosition = null;
-              this.updateDockedResizerCursor();
-              this.adjustSizes();
-            }
           }
 
           this.state.drag = true;
+          // Store start position for undock threshold detection
+          drag.startX = p.x;
+          drag.startY = p.y;
           drag.x = p.x;
           drag.y = p.y;
           drag.left = drag.x - (this.state.win?.offsetLeft ?? 0);
@@ -662,6 +678,25 @@ export class ServiceInjector {
         drag.y = p.y;
 
         if (this.state.drag) {
+          // Check if we need to undock (when docked and drag threshold exceeded)
+          if (this.state.docked && this.state.undocking) {
+            const deltaX = Math.abs(drag.x - drag.startX);
+            const deltaY = Math.abs(drag.y - drag.startY);
+            
+            if (deltaX > UNDOCK_DRAG_THRESHOLD || deltaY > UNDOCK_DRAG_THRESHOLD) {
+              // Threshold exceeded - perform undock
+              this.performUndock(drag.x, drag.y);
+              // Update drag offsets for the new window position
+              drag.left = drag.x - (this.state.win?.offsetLeft ?? 0);
+              drag.top = drag.y - (this.state.win?.offsetTop ?? 0);
+            } else {
+              // Still within threshold - don't move window yet
+              e.stopPropagation();
+              e.preventDefault();
+              return;
+            }
+          }
+
           this.state.winPosition.left = drag.x - drag.left;
           this.state.winPosition.top = drag.y - drag.top;
           this.restorePosition(this.state.win!, this.state.winPosition);

@@ -26,6 +26,12 @@ export const DOCK_THRESHOLD = 20;
 export const DOCK_MIN_SCREEN_WIDTH = 768;
 
 /**
+ * Minimum drag distance in pixels required to undock a docked window.
+ * Prevents accidental undocking on simple clicks.
+ */
+export const UNDOCK_DRAG_THRESHOLD = 5;
+
+/**
  * Default internal configuration values.
  */
 export const DEFAULT_CONFIG: InternalConfig = {
