@@ -56,6 +56,10 @@ export interface ServiceInjectorConfig {
   hideTab?: boolean;
   /** Enable window docking to viewport edges. true = all sides, array = specific sides only */
   dockable?: boolean | DockSide[];
+  /** Enable wrapper mode: embed foreign content in fullscreen iframe, overlay floating window */
+  wrapperMode?: boolean;
+  /** URL to load in the main fullscreen iframe (wrapper mode only) */
+  wrapperUrl?: string | null;
 }
 
 /**
@@ -96,6 +100,8 @@ export interface InternalConfig {
   r: boolean;
   ht: boolean;
   dk: boolean | DockSide[];
+  wm: boolean;
+  wu: string | null;
 }
 
 /**
@@ -166,6 +172,10 @@ export interface InjectorState {
   dockPreview: HTMLElement | null;
   /** Current dock preview side being shown (if any) */
   dockPreviewSide: DockSide | null;
+  /** Main iframe element for wrapper mode (contains foreign content) */
+  mainIframe: HTMLIFrameElement | null;
+  /** Main container element for wrapper mode */
+  mainContainer: HTMLElement | null;
 }
 
 /**

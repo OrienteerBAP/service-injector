@@ -133,7 +133,10 @@ export class ServiceInjector {
       undocking: false,
       resizeDirection: null,
       dockPreview: null,
-      dockPreviewSide: null
+      dockPreviewSide: null,
+      // Wrapper mode state
+      mainIframe: null,
+      mainContainer: null
     };
   }
 
@@ -458,7 +461,9 @@ export class ServiceInjector {
     // Read data attributes
     if (script.dataset) {
       for (const [id, value] of Object.entries(script.dataset)) {
-        const configKey = CONFIG_MAPPING[id];
+        // Convert camelCase to kebab-case (e.g., wrapperMode -> wrapper-mode)
+        const kebabId = id.replace(/([A-Z])/g, '-$1').toLowerCase();
+        const configKey = CONFIG_MAPPING[kebabId];
         if (configKey && configKey in this.config && value !== undefined) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this.config as any)[configKey] = parseValue(value);
@@ -498,6 +503,17 @@ export class ServiceInjector {
     const rootElm = createElement('div', { id: this.sp('%prefix%-service-injector') });
     document.body.appendChild(rootElm);
     this.state.root = rootElm;
+
+    // Create main iframe container if in wrapper mode
+    if (conf.wm && conf.wu) {
+      const mainContainer = createElement('div', { id: this.sp('%prefix%-main-container') });
+      const mainIframe = createElement('iframe', { id: this.sp('%prefix%-main-iframe') }) as HTMLIFrameElement;
+      mainIframe.src = conf.wu;
+      mainContainer.appendChild(mainIframe);
+      rootElm.appendChild(mainContainer);
+      this.state.mainContainer = mainContainer;
+      this.state.mainIframe = mainIframe;
+    }
 
     // Create shadow element (for animation)
     const shadowElm = createElement('div', { id: this.sp('%prefix%-shadow') });
@@ -845,6 +861,9 @@ export class ServiceInjector {
     const destroyName = makeFunctionName(this.prefix, 'Destroy');
     const dockName = makeFunctionName(this.prefix, 'Dock');
     const undockName = makeFunctionName(this.prefix, 'Undock');
+    const refreshMainName = makeFunctionName(this.prefix, 'RefreshMain');
+    const navigateMainName = makeFunctionName(this.prefix, 'NavigateMain');
+    const isWrapperModeName = makeFunctionName(this.prefix, 'IsWrapperMode');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any)[toggleName] = () => this.toggle();
@@ -854,6 +873,12 @@ export class ServiceInjector {
     (window as any)[dockName] = (side: DockSide) => this.dock(side);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any)[undockName] = () => this.undock();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any)[refreshMainName] = () => this.refreshMain();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any)[navigateMainName] = (url: string) => this.navigateMain(url);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any)[isWrapperModeName] = () => this.isWrapperMode();
   }
 
   /**
@@ -866,6 +891,9 @@ export class ServiceInjector {
     const destroyName = makeFunctionName(this.prefix, 'Destroy');
     const dockName = makeFunctionName(this.prefix, 'Dock');
     const undockName = makeFunctionName(this.prefix, 'Undock');
+    const refreshMainName = makeFunctionName(this.prefix, 'RefreshMain');
+    const navigateMainName = makeFunctionName(this.prefix, 'NavigateMain');
+    const isWrapperModeName = makeFunctionName(this.prefix, 'IsWrapperMode');
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -876,6 +904,12 @@ export class ServiceInjector {
       delete (window as any)[dockName];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (window as any)[undockName];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any)[refreshMainName];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any)[navigateMainName];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any)[isWrapperModeName];
     } catch {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any)[toggleName] = undefined;
@@ -885,6 +919,12 @@ export class ServiceInjector {
       (window as any)[dockName] = undefined;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any)[undockName] = undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any)[refreshMainName] = undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any)[navigateMainName] = undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any)[isWrapperModeName] = undefined;
     }
   }
 
@@ -1296,6 +1336,42 @@ export class ServiceInjector {
       if (el) {
         el.style.display = allowedDirections.includes(dir) ? '' : 'none';
       }
+    }
+  }
+
+  /**
+   * Check if running in wrapper mode.
+   * @returns true if wrapper mode is enabled
+   */
+  isWrapperMode(): boolean {
+    return this.config.wm === true;
+  }
+
+  /**
+   * Get the main iframe element (wrapper mode only).
+   * @returns The main iframe element or null if not in wrapper mode
+   */
+  getMainIframe(): HTMLIFrameElement | null {
+    return this.state.mainIframe;
+  }
+
+  /**
+   * Refresh the main iframe content (wrapper mode only).
+   * Reloads the current URL in the main iframe.
+   */
+  refreshMain(): void {
+    if (this.state.mainIframe) {
+      this.state.mainIframe.src = this.state.mainIframe.src;
+    }
+  }
+
+  /**
+   * Navigate main iframe to a new URL (wrapper mode only).
+   * @param url - The URL to navigate to
+   */
+  navigateMain(url: string): void {
+    if (this.state.mainIframe) {
+      this.state.mainIframe.src = url;
     }
   }
 

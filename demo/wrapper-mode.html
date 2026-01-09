@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>service-injector - Wrapper Mode Demo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Control panel - fixed position overlay */
+    .demo-controls {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 100000;
+      background: rgba(255, 255, 255, 0.97);
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      font-size: 14px;
+      max-width: 320px;
+      transition: all 0.3s ease;
+    }
+
+    .demo-controls.minimized {
+      max-width: 50px;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .demo-controls.minimized .controls-content {
+      display: none;
+    }
+
+    .demo-controls.minimized .minimize-btn {
+      transform: rotate(180deg);
+    }
+
+    .controls-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .demo-controls.minimized .controls-header {
+      margin-bottom: 0;
+    }
+
+    .controls-header h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .demo-controls.minimized .controls-header h3 {
+      display: none;
+    }
+
+    .minimize-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+      color: #666;
+      transition: transform 0.3s ease;
+    }
+
+    .minimize-btn:hover {
+      color: #333;
+    }
+
+    .info-box {
+      background: #f0f7ff;
+      border: 1px solid #c2deff;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      font-size: 12px;
+      color: #1a5dad;
+      line-height: 1.5;
+    }
+
+    .info-box strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #0d3d78;
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .demo-controls button.action-btn {
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #fff;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: left;
+    }
+
+    .demo-controls button.action-btn:hover {
+      background: #f5f5f5;
+      border-color: #ccc;
+    }
+
+    .demo-controls button.action-btn:active {
+      transform: translateY(1px);
+    }
+
+    .demo-controls button.action-btn.primary {
+      background: linear-gradient(to bottom, #4a90d9, #357abd);
+      border-color: #357abd;
+      color: #fff;
+    }
+
+    .demo-controls button.action-btn.primary:hover {
+      background: linear-gradient(to bottom, #5a9fe9, #4589cc);
+      border-color: #4589cc;
+    }
+
+    .section-divider {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 14px 0;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .highlight-box {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #92400e;
+      line-height: 1.5;
+      margin-top: 14px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 12px;
+      color: #4a90d9;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <!-- Control panel overlay -->
+  <div class="demo-controls" id="controlPanel">
+    <div class="controls-header">
+      <h3>Wrapper Mode Demo</h3>
+      <button class="minimize-btn" onclick="togglePanel()" title="Minimize/Expand">&#x25C0;</button>
+    </div>
+    
+    <div class="controls-content">
+      <div class="info-box">
+        <strong>How it works:</strong>
+        Main content (Wikipedia) loads in a fullscreen iframe. 
+        The floating window (OpenStreetMap) overlays on top. 
+        You can refresh or navigate the main content without losing the map state.
+      </div>
+
+      <div class="section-label">Floating Window</div>
+      <div class="button-group">
+        <button class="action-btn primary" onclick="siToggleWindow()">Toggle Map Window</button>
+      </div>
+
+      <hr class="section-divider">
+
+      <div class="section-label">Main Content Control</div>
+      <div class="button-group">
+        <button class="action-btn" onclick="siRefreshMain()">Refresh Wikipedia</button>
+        <button class="action-btn" onclick="siNavigateMain('https://en.wikipedia.org/wiki/Map')">Navigate to "Map" article</button>
+        <button class="action-btn" onclick="siNavigateMain('https://en.wikipedia.org/wiki/Geographic_information_system')">Navigate to "GIS" article</button>
+        <button class="action-btn" onclick="siNavigateMain('https://en.wikipedia.org/wiki/OpenStreetMap')">Back to "OpenStreetMap"</button>
+      </div>
+
+      <div class="highlight-box">
+        <strong>Try this:</strong> Open the map window, interact with it, then click "Refresh Wikipedia". 
+        Notice how the map window keeps its state while the main content reloads!
+      </div>
+
+      <a href="index.html" class="back-link">&larr; Back to Standard Demo</a>
+    </div>
+  </div>
+
+  <!-- Service Injector in Wrapper Mode -->
+  <script 
+    id="service-injector" 
+    src="../dist/index.iife.js"
+    data-wrapper-mode="true"
+    data-wrapper-url="https://en.wikipedia.org/wiki/OpenStreetMap"
+    data-url="https://www.openstreetmap.org/export/embed.html?bbox=-0.15%2C51.49%2C-0.08%2C51.52&layer=mapnik"
+    data-position="right"
+    data-offset="50%"
+    data-window-width="400px"
+    data-window-height="350px"
+  ></script>
+
+  <script>
+    // Panel minimize/expand toggle
+    function togglePanel() {
+      var panel = document.getElementById('controlPanel');
+      panel.classList.toggle('minimized');
+    }
+  </script>
+</body>
+</html>

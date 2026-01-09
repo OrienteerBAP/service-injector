@@ -10,6 +10,7 @@ Lightweight JavaScript library for SaaS providers to embed services on client we
 - **Mobile-Aware** — Auto-detects mobile and opens in new tab for better UX
 - **Interactive Window** — Draggable, resizable with touch support
 - **Dockable** — Snap to screen edges like browser DevTools
+- **Wrapper Mode** — Host external content with your floating overlay
 - **Fully Customizable** — Templates, styles, and themes
 - **TypeScript Support** — Full type definitions included
 
@@ -74,6 +75,7 @@ For detailed documentation, see the **[docs/](./docs/)** folder:
 | [Configuration](./docs/configuration.md) | All options for position, size, behavior |
 | [Customization](./docs/customization.md) | Templates, styles, themes |
 | [Docking](./docs/docking.md) | Snap windows to screen edges |
+| [Wrapper Mode](./docs/wrapper-mode.md) | Host external content with overlay |
 | [API Reference](./docs/api.md) | Methods, global functions, TypeScript |
 | [Mobile Behavior](./docs/mobile.md) | How mobile devices are handled |
 

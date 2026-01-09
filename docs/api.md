@@ -246,6 +246,66 @@ const prefix = injector.getPrefix();
 
 ---
 
+### Wrapper Mode Methods
+
+These methods are only useful when running in [Wrapper Mode](./wrapper-mode.md).
+
+#### `isWrapperMode()`
+
+Checks if running in wrapper mode.
+
+```javascript
+if (injector.isWrapperMode()) {
+  console.log('Wrapper mode is active');
+}
+```
+
+**Returns:** `boolean`
+
+---
+
+#### `getMainIframe()`
+
+Gets a reference to the main iframe element (wrapper mode only).
+
+```javascript
+const mainIframe = injector.getMainIframe();
+if (mainIframe) {
+  console.log('Current URL:', mainIframe.src);
+}
+```
+
+**Returns:** `HTMLIFrameElement | null`
+
+---
+
+#### `refreshMain()`
+
+Refreshes the main iframe content without affecting the floating window.
+
+```javascript
+injector.refreshMain();
+```
+
+**Use case:** Reload external content while preserving your widget's state.
+
+---
+
+#### `navigateMain(url)`
+
+Navigates the main iframe to a new URL.
+
+```javascript
+injector.navigateMain('https://example.com/another-page');
+```
+
+**Parameters:**
+- `url` - The URL to navigate to
+
+**Use case:** Change the wrapped content programmatically.
+
+---
+
 ## Global Functions (Script Tag)
 
 When using the script tag, these functions are automatically exposed on `window`:
@@ -258,6 +318,9 @@ When using the script tag, these functions are automatically exposed on `window`
 | `siDock(side)` | Dock to edge |
 | `siUndock()` | Undock window |
 | `siDestroy()` | Remove injector |
+| `siRefreshMain()` | Refresh main iframe (wrapper mode) |
+| `siNavigateMain(url)` | Navigate main iframe (wrapper mode) |
+| `siIsWrapperMode()` | Check if in wrapper mode |
 
 ```javascript
 // Toggle from anywhere
@@ -271,6 +334,12 @@ siUndock();
 
 // Clean up
 siDestroy();
+
+// Wrapper mode functions
+if (siIsWrapperMode()) {
+  siRefreshMain();
+  siNavigateMain('https://example.com');
+}
 ```
 
 ### Custom Prefix
@@ -283,6 +352,9 @@ With `prefix: 'help'`:
 | `helpDock(side)` | Dock to edge |
 | `helpUndock()` | Undock window |
 | `helpDestroy()` | Remove injector |
+| `helpRefreshMain()` | Refresh main iframe (wrapper mode) |
+| `helpNavigateMain(url)` | Navigate main iframe (wrapper mode) |
+| `helpIsWrapperMode()` | Check if in wrapper mode |
 
 ---
 
@@ -481,3 +553,4 @@ if (window.location.pathname.includes('/app')) {
 - [Configuration](./configuration.md) - All options
 - [Customization](./customization.md) - Templates and styling
 - [Docking](./docking.md) - Docking feature
+- [Wrapper Mode](./wrapper-mode.md) - Host external content

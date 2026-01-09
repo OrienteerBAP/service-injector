@@ -75,6 +75,24 @@ new ServiceInjector({ dockable: true });
 new ServiceInjector({ dockable: ['left', 'right'] });
 ```
 
+### "I want to wrap external content with my floating widget overlay"
+
+```html
+<script id="service-injector" 
+        src="...?wm=true&wu=https://external-site.com&url=/my-widget">
+</script>
+```
+
+```javascript
+new ServiceInjector({ 
+  wrapperMode: true,
+  wrapperUrl: 'https://external-site.com',
+  url: '/my-widget'
+});
+```
+
+See [Wrapper Mode](./wrapper-mode.md) for details.
+
 ---
 
 ## Full Options Reference
@@ -100,6 +118,8 @@ Use these option names when creating a `ServiceInjector` instance:
 | `resizable` | `boolean` | `true` | Enable window resizing |
 | `hideTab` | `boolean` | `false` | Hide tab when window is open |
 | `dockable` | `boolean \| string[]` | `false` | Enable docking to screen edges |
+| `wrapperMode` | `boolean` | `false` | Enable wrapper mode (embed external content) |
+| `wrapperUrl` | `string` | `null` | URL for main fullscreen iframe (wrapper mode) |
 | `prefix` | `string` | `'si'` | Element ID prefix |
 | `saasUrl` | `string` | `'https://orienteer.org'` | Default URL when `url` not set |
 | `tabTemplate` | `string` | (default) | Custom tab HTML |
@@ -128,6 +148,8 @@ Use these short parameter names in query strings:
 | `r` | `resizable` | `true` | Enable resizing |
 | `ht` | `hide-tab` | `false` | Hide tab when open |
 | `dk` | `dockable` | `false` | Enable docking |
+| `wm` | `wrapper-mode` | `false` | Enable wrapper mode |
+| `wu` | `wrapper-url` | `null` | Main iframe URL (wrapper mode) |
 
 ---
 
@@ -258,4 +280,5 @@ injector.install();
 
 - [Customize appearance](./customization.md) - Templates, styles, themes
 - [Enable docking](./docking.md) - Sidebar-like behavior
+- [Wrapper Mode](./wrapper-mode.md) - Host external content with overlay
 - [API Reference](./api.md) - Programmatic control

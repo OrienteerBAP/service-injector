@@ -49,7 +49,9 @@ export const DEFAULT_CONFIG: InternalConfig = {
   d: true,
   r: true,
   ht: false,
-  dk: false
+  dk: false,
+  wm: false,
+  wu: null
 };
 
 /**
@@ -70,7 +72,9 @@ export const CONFIG_MAPPING: ConfigMapping = {
   'draggable': 'd',
   'resizable': 'r',
   'hide-tab': 'ht',
-  'dockable': 'dk'
+  'dockable': 'dk',
+  'wrapper-mode': 'wm',
+  'wrapper-url': 'wu'
 };
 
 /**
@@ -91,7 +95,9 @@ export const OPTIONS_TO_CONFIG: Record<string, keyof InternalConfig> = {
   draggable: 'd',
   resizable: 'r',
   hideTab: 'ht',
-  dockable: 'dk'
+  dockable: 'dk',
+  wrapperMode: 'wm',
+  wrapperUrl: 'wu'
 };
 
 /**
@@ -157,7 +163,10 @@ export const DEFAULT_STYLES =
   "#%prefix%-resize-ne {top: -3px; right: -3px; width: 12px; height: 12px; cursor: ne-resize}" +
   "#%prefix%-resize-nw {top: -3px; left: -3px; width: 12px; height: 12px; cursor: nw-resize}" +
   "#%prefix%-resize-se {bottom: -3px; right: -3px; width: 12px; height: 12px; cursor: se-resize}" +
-  "#%prefix%-resize-sw {bottom: -3px; left: -3px; width: 12px; height: 12px; cursor: sw-resize}";
+  "#%prefix%-resize-sw {bottom: -3px; left: -3px; width: 12px; height: 12px; cursor: sw-resize}" +
+  // Wrapper mode - main iframe container (fullscreen behind floating elements)
+  "#%prefix%-main-container {position:fixed;top:0;left:0;width:100%;height:100%;z-index:1}" +
+  "#%prefix%-main-iframe {width:100%;height:100%;border:none}";
 
 /**
  * Mobile user agent detection regex.

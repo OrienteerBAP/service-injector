@@ -54,6 +54,7 @@ The demo lets you configure all options interactively and see changes in real-ti
 | [Configuration](./configuration.md) | All options for position, size, behavior |
 | [Customization](./customization.md) | Templates, styles, and theming |
 | [Docking](./docking.md) | Snap windows to screen edges (sidebar mode) |
+| [Wrapper Mode](./wrapper-mode.md) | Host external content with your overlay |
 | [API Reference](./api.md) | Programmatic control and TypeScript support |
 | [Mobile Behavior](./mobile.md) | How mobile devices are handled |
 
