@@ -4,7 +4,8 @@ import type {
   InjectorState,
   Position,
   GlobalConfig,
-  DockSide
+  DockSide,
+  ResizeDirection
 } from './types';
 import {
   DEFAULT_PREFIX,
@@ -109,7 +110,7 @@ export class ServiceInjector {
       shadowPosition: { top: 0, left: 0, width: 0, height: 0 },
       iframe: null,
       inited: false,
-      dragState: { x: 0, y: 0, top: 0, left: 0, width: 0, height: 0 },
+      dragState: { x: 0, y: 0, startX: 0, startY: 0, top: 0, left: 0, width: 0, height: 0 },
       mobile: false,
       drag: false,
       resize: false,
@@ -128,7 +129,8 @@ export class ServiceInjector {
       docked: null,
       preDockPosition: null,
       originalBodyMargin: null,
-      undocking: false
+      undocking: false,
+      resizeDirection: null
     };
   }
 
@@ -529,25 +531,39 @@ export class ServiceInjector {
     }
 
     if (conf.r) {
-      const resizer = getElementById(this.sp('%prefix%-resizer'));
-      if (resizer) {
-        const resizeStartHandler = (e: MouseEvent | TouchEvent): void => {
-          this.state.resize = true;
-          const p = extractPoint(e);
-          drag.x = p.x;
-          drag.y = p.y;
-          drag.left = drag.x - (this.state.win?.offsetLeft ?? 0);
-          drag.top = drag.y - (this.state.win?.offsetTop ?? 0);
-          drag.width = drag.x - (this.state.win?.offsetWidth ?? 0);
-          drag.height = drag.y - (this.state.win?.offsetHeight ?? 0);
-          if (this.state.iframe) {
-            this.state.iframe.style.pointerEvents = 'none';
-          }
-          e.stopPropagation();
-          e.preventDefault();
-        };
-        resizer.addEventListener('mousedown', resizeStartHandler as EventListener);
-        resizer.addEventListener('touchstart', resizeStartHandler as EventListener);
+      // Setup resize handlers for all edges and corners
+      const resizeDirections: ResizeDirection[] = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
+      
+      for (const direction of resizeDirections) {
+        const resizeEl = getElementById(this.sp(`%prefix%-resize-${direction}`));
+        if (resizeEl) {
+          const resizeStartHandler = (e: MouseEvent | TouchEvent): void => {
+            this.state.resize = true;
+            this.state.resizeDirection = direction;
+            const p = extractPoint(e);
+            const win = this.state.win;
+            
+            // Store initial mouse position for delta calculations
+            drag.startX = p.x;
+            drag.startY = p.y;
+            // Also set x/y for consistency
+            drag.x = p.x;
+            drag.y = p.y;
+            // Store initial window state
+            drag.left = win?.offsetLeft ?? 0;
+            drag.top = win?.offsetTop ?? 0;
+            drag.width = win?.offsetWidth ?? 0;
+            drag.height = win?.offsetHeight ?? 0;
+            
+            if (this.state.iframe) {
+              this.state.iframe.style.pointerEvents = 'none';
+            }
+            e.stopPropagation();
+            e.preventDefault();
+          };
+          resizeEl.addEventListener('mousedown', resizeStartHandler as EventListener);
+          resizeEl.addEventListener('touchstart', resizeStartHandler as EventListener);
+        }
       }
     }
 
@@ -564,16 +580,8 @@ export class ServiceInjector {
           this.restorePosition(this.state.win!, this.state.winPosition);
         }
 
-        if (this.state.resize) {
-          // Handle docked resize (constrained direction)
-          if (this.state.docked) {
-            this.handleDockedResize(drag.x, drag.y);
-          } else {
-            this.state.winPosition.width = drag.x - drag.width;
-            this.state.winPosition.height = drag.y - drag.height;
-            this.restorePosition(this.state.win!, this.state.winPosition);
-            this.adjustSizes();
-          }
+        if (this.state.resize && this.state.resizeDirection) {
+          this.handleDirectionalResize(drag.x, drag.y);
         }
 
         e.stopPropagation();
@@ -592,6 +600,7 @@ export class ServiceInjector {
         const wasDragging = this.state.drag;
         this.state.drag = false;
         this.state.resize = false;
+        this.state.resizeDirection = null;
         this.state.undocking = false;
 
         if (this.state.iframe) {
@@ -621,44 +630,67 @@ export class ServiceInjector {
   }
 
   /**
-   * Handle resize while window is docked (constrained to single direction).
+   * Handle resize based on the current resize direction.
+   * Supports all 4 edges (n, s, e, w) and 4 corners (ne, nw, se, sw).
    * @param x - Current pointer X position
    * @param y - Current pointer Y position
    */
-  private handleDockedResize(x: number, y: number): void {
+  private handleDirectionalResize(x: number, y: number): void {
     const win = this.state.win;
     if (!win) return;
 
-    const docked = this.state.docked;
+    const direction = this.state.resizeDirection;
+    if (!direction) return;
+
+    const drag = this.state.dragState;
     const winPos = this.state.winPosition;
-
-    switch (docked) {
-      case 'left':
-        // Can only resize width (expand to the right)
-        winPos.width = x - win.offsetLeft;
-        break;
-      case 'right':
-        // Can only resize width (expand to the left)
-        winPos.width = win.offsetLeft + win.offsetWidth - x;
-        win.style.left = x + 'px';
-        winPos.left = x;
-        break;
-      case 'top':
-        // Can only resize height (expand downward)
-        winPos.height = y - win.offsetTop;
-        break;
-      case 'bottom':
-        // Can only resize height (expand upward)
-        winPos.height = win.offsetTop + win.offsetHeight - y;
-        win.style.top = y + 'px';
-        winPos.top = y;
-        break;
+    const docked = this.state.docked;
+    
+    // Calculate deltas from initial mouse position (use startX/startY, not x/y)
+    const deltaX = x - drag.startX;
+    const deltaY = y - drag.startY;
+    
+    // Check which edges are being resized
+    const resizeN = direction.includes('n');
+    const resizeS = direction.includes('s');
+    const resizeE = direction.includes('e');
+    const resizeW = direction.includes('w');
+    
+    // Handle horizontal resize
+    if (resizeE) {
+      // East: expand to the right, width increases
+      winPos.width = Math.max(300, drag.width + deltaX);
+    } else if (resizeW) {
+      // West: expand to the left, left position decreases, width increases
+      const newWidth = Math.max(300, drag.width - deltaX);
+      const widthDiff = newWidth - drag.width;
+      winPos.left = drag.left - widthDiff;
+      winPos.width = newWidth;
     }
-
+    
+    // Handle vertical resize
+    if (resizeS) {
+      // South: expand downward, height increases
+      winPos.height = Math.max(200, drag.height + deltaY);
+    } else if (resizeN) {
+      // North: expand upward, top position decreases, height increases
+      const newHeight = Math.max(200, drag.height - deltaY);
+      const heightDiff = newHeight - drag.height;
+      winPos.top = drag.top - heightDiff;
+      winPos.height = newHeight;
+    }
+    
+    // Apply position and size
+    win.style.left = winPos.left + 'px';
+    win.style.top = winPos.top + 'px';
     win.style.width = winPos.width + 'px';
     win.style.height = winPos.height + 'px';
+    
+    // Clear right/bottom styles to avoid conflicts
+    win.style.right = '';
+    win.style.bottom = '';
 
-    // Update body margin to match new size
+    // Update body margin if docked
     if (docked === 'left' || docked === 'right') {
       this.applyBodyMargin(docked, winPos.width + 'px');
     } else if (docked === 'top' || docked === 'bottom') {
@@ -723,18 +755,16 @@ export class ServiceInjector {
 
   /**
    * Adjust iframe and body sizes after resize.
+   * With flexbox layout, this is mostly handled by CSS, but we may need
+   * to trigger reflow for certain browsers.
    */
   private adjustSizes(): void {
+    // Force reflow to ensure layout updates
     const win = this.state.win;
-    const header = getElementById(this.sp('%prefix%-header'));
-    const body = getElementById(this.sp('%prefix%-body'));
-    const iframe = getElementById(this.sp('%prefix%-iframe'));
-
-    if (!win || !header || !body || !iframe) return;
-
-    body.style.height = (win.offsetHeight - header.offsetHeight - 4) + 'px';
-    (iframe as HTMLElement).style.height = (win.offsetHeight - header.offsetHeight - 15) + 'px';
-    (iframe as HTMLElement).style.width = (win.offsetWidth - 3) + 'px';
+    if (win) {
+      // Trigger reflow
+      void win.offsetHeight;
+    }
   }
 
   /**
@@ -1074,33 +1104,45 @@ export class ServiceInjector {
   }
 
   /**
-   * Update the resizer cursor based on dock state.
-   * When docked, only allow resizing in the available direction.
+   * Update resize handle visibility based on dock state.
+   * When docked, only show resize handles for the available direction.
    */
   private updateDockedResizerCursor(): void {
-    const resizer = getElementById(this.sp('%prefix%-resizer'));
-    if (!resizer) return;
-
     const docked = this.state.docked;
+    const directions: ResizeDirection[] = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
+    
+    // Determine which directions are allowed based on dock state
+    let allowedDirections: ResizeDirection[];
+    
     if (!docked) {
-      resizer.style.cursor = 'se-resize';
-      return;
+      // Not docked: all directions allowed
+      allowedDirections = directions;
+    } else {
+      // When docked, only allow resizing away from the docked edge
+      switch (docked) {
+        case 'left':
+          allowedDirections = ['e'];
+          break;
+        case 'right':
+          allowedDirections = ['w'];
+          break;
+        case 'top':
+          allowedDirections = ['s'];
+          break;
+        case 'bottom':
+          allowedDirections = ['n'];
+          break;
+        default:
+          allowedDirections = directions;
+      }
     }
-
-    // When docked, constrain resize direction
-    switch (docked) {
-      case 'left':
-        resizer.style.cursor = 'e-resize';
-        break;
-      case 'right':
-        resizer.style.cursor = 'w-resize';
-        break;
-      case 'top':
-        resizer.style.cursor = 's-resize';
-        break;
-      case 'bottom':
-        resizer.style.cursor = 'n-resize';
-        break;
+    
+    // Show/hide resize handles
+    for (const dir of directions) {
+      const el = getElementById(this.sp(`%prefix%-resize-${dir}`));
+      if (el) {
+        el.style.display = allowedDirections.includes(dir) ? '' : 'none';
+      }
     }
   }
 

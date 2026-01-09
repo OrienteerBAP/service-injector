@@ -4,6 +4,13 @@
 export type DockSide = 'left' | 'right' | 'top' | 'bottom';
 
 /**
+ * Resize direction for edge/corner resizing.
+ * Edges: 'n', 's', 'e', 'w'
+ * Corners: 'ne', 'nw', 'se', 'sw'
+ */
+export type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
+
+/**
  * Stored body margins for restoration after undocking.
  */
 export interface BodyMargins {
@@ -107,6 +114,10 @@ export interface Position {
 export interface DragState {
   x: number;
   y: number;
+  /** Initial mouse X position at start of drag/resize */
+  startX: number;
+  /** Initial mouse Y position at start of drag/resize */
+  startY: number;
   top: number;
   left: number;
   width: number;
@@ -149,6 +160,8 @@ export interface InjectorState {
   originalBodyMargin: BodyMargins | null;
   /** Flag indicating we're in the process of undocking via drag */
   undocking: boolean;
+  /** Current resize direction when resizing from edges/corners */
+  resizeDirection: ResizeDirection | null;
 }
 
 /**

@@ -136,12 +136,11 @@ These are the DOM elements created by service-injector:
 ├── #si-tab (floating tab button)
 │   └── [your tab template content]
 └── #si-window (popup window)
-    └── #si-inner
-        ├── #si-header (draggable header)
-        ├── #si-body
-        │   └── #si-iframe (your content)
-        └── #si-footer
-            └── #si-resizer (resize handle)
+    ├── #si-inner
+    │   ├── #si-header (draggable header)
+    │   └── #si-body
+    │       └── #si-iframe (your content)
+    └── resize zones (invisible, on all edges and corners)
 ```
 
 <!-- TODO: Add annotated screenshot showing element IDs -->
@@ -153,9 +152,9 @@ These are the DOM elements created by service-injector:
 | `#si-header` | Draggable header bar | Background, height, cursor |
 | `#si-body` | Content area | Border, padding |
 | `#si-iframe` | Embedded content | Width, height (auto-managed) |
-| `#si-footer` | Footer area | Usually minimal styling |
-| `#si-resizer` | Resize handle | Cursor, size |
 | `#si-shadow` | Animation placeholder | Background color |
+
+**Resize zones:** The window can be resized from all edges and corners. These zones are invisible (6px wide) and positioned along each edge.
 
 **Note:** Replace `si` with your custom prefix if using one.
 
@@ -181,10 +180,8 @@ For reference when creating custom templates:
   <div id='%prefix%-body'>
     <iframe id='%prefix%-iframe'></iframe>
   </div>
-  <div id='%prefix%-footer'>
-    <div id='%prefix%-resizer'></div>
-  </div>
 </div>
+<!-- Resize zones are automatically added for all edges and corners -->
 ```
 
 ### Default Styles
@@ -205,6 +202,8 @@ For reference when creating custom templates:
   height: 100%;
   width: 100%;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 #si-header {
   height: 1.5em;
@@ -212,34 +211,22 @@ For reference when creating custom templates:
   text-align: right;
   padding: 0 0.5em;
   cursor: move;
+  flex-shrink: 0;
 }
 #si-body {
   border: 1px solid #aaa;
-  bottom: 0;
+  flex: 1;
+  overflow: hidden;
 }
 #si-iframe {
   border: 0;
-}
-#si-footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-#si-resizer {
-  width: 10px;
-  height: 10px;
-  float: right;
-  position: relative;
-  right: -2px;
-  bottom: -2px;
-  border-right: 3px solid black;
-  border-bottom: 3px solid black;
-  cursor: se-resize;
+  width: 100%;
+  height: 100%;
 }
 #si-shadow {
   background: grey;
 }
+/* Resize zones are positioned along edges and corners */
 ```
 
 ---
@@ -307,9 +294,7 @@ For reference when creating custom templates:
       #si-body {
         border-color: #444;
       }
-      #si-resizer {
-        border-color: #666;
-      }
+
     `
   };
 </script>

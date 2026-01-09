@@ -105,27 +105,51 @@ export const DEFAULT_TAB_TEMPLATE = "<a onclick='return %prefix%ToggleWindow();'
 
 /**
  * Default window template. Placeholders: %prefix%, %url%
+ * Includes resize zones for all edges and corners.
  */
 export const DEFAULT_WINDOW_TEMPLATE = 
   "<div id='%prefix%-inner'>" +
     "<div id='%prefix%-header'><a href='#' onclick='return %prefix%ToggleWindow();' style='cursor:pointer'>X</a></div>" +
     "<div id='%prefix%-body'><iframe id='%prefix%-iframe'></iframe></div>" +
-    "<div id='%prefix%-footer'><div id='%prefix%-resizer'></div></div>" +
-  "</div>";
+  "</div>" +
+  // Edge resize zones
+  "<div id='%prefix%-resize-n' class='%prefix%-resize-edge' data-resize='n'></div>" +
+  "<div id='%prefix%-resize-s' class='%prefix%-resize-edge' data-resize='s'></div>" +
+  "<div id='%prefix%-resize-e' class='%prefix%-resize-edge' data-resize='e'></div>" +
+  "<div id='%prefix%-resize-w' class='%prefix%-resize-edge' data-resize='w'></div>" +
+  // Corner resize zones
+  "<div id='%prefix%-resize-ne' class='%prefix%-resize-corner' data-resize='ne'></div>" +
+  "<div id='%prefix%-resize-nw' class='%prefix%-resize-corner' data-resize='nw'></div>" +
+  "<div id='%prefix%-resize-se' class='%prefix%-resize-corner' data-resize='se'></div>" +
+  "<div id='%prefix%-resize-sw' class='%prefix%-resize-corner' data-resize='sw'></div>";
+
+/**
+ * Resize zone thickness in pixels.
+ */
+export const RESIZE_ZONE_SIZE = 6;
 
 /**
  * Default styles. Placeholder: %prefix%
  */
 export const DEFAULT_STYLES = 
   "#%prefix%-tab {background: white; border: 1px solid black; padding: 1em}" +
-  "#%prefix%-window {background: white; border: 1px solid black; min-width: 300px; min-height: 200px}" +
-  "#%prefix%-inner {height: 100%; width: 100%; position: relative}" +
-  "#%prefix%-header {height:1.5em; background: #aaa; text-align: right; padding: 0 .5em;cursor:move}" +
-  "#%prefix%-body {border: 1px solid #aaa; bottom: 0}" +
-  "#%prefix%-iframe {border: 0}" +
-  "#%prefix%-footer {position: absolute; bottom: 0; left:0; right:0}" +
-  "#%prefix%-resizer {width: 10px; height: 10px; float:right; position: relative; right: -2px; bottom: -2px; border-right: 3px solid black; border-bottom: 3px solid black; cursor: se-resize}" +
-  "#%prefix%-shadow {background: grey; z-index: 99999}";
+  "#%prefix%-window {background: white; border: 1px solid black; min-width: 300px; min-height: 200px; position: relative}" +
+  "#%prefix%-inner {height: 100%; width: 100%; position: relative; display: flex; flex-direction: column}" +
+  "#%prefix%-header {height:1.5em; background: #aaa; text-align: right; padding: 0 .5em;cursor:move; flex-shrink: 0}" +
+  "#%prefix%-body {border: 1px solid #aaa; flex: 1; overflow: hidden}" +
+  "#%prefix%-iframe {border: 0; width: 100%; height: 100%}" +
+  "#%prefix%-shadow {background: grey; z-index: 99999}" +
+  // Edge resize zones - positioned along each edge
+  ".%prefix%-resize-edge, .%prefix%-resize-corner {position: absolute; z-index: 100000}" +
+  "#%prefix%-resize-n {top: -3px; left: 6px; right: 6px; height: 6px; cursor: n-resize}" +
+  "#%prefix%-resize-s {bottom: -3px; left: 6px; right: 6px; height: 6px; cursor: s-resize}" +
+  "#%prefix%-resize-e {right: -3px; top: 6px; bottom: 6px; width: 6px; cursor: e-resize}" +
+  "#%prefix%-resize-w {left: -3px; top: 6px; bottom: 6px; width: 6px; cursor: w-resize}" +
+  // Corner resize zones - positioned at each corner
+  "#%prefix%-resize-ne {top: -3px; right: -3px; width: 12px; height: 12px; cursor: ne-resize}" +
+  "#%prefix%-resize-nw {top: -3px; left: -3px; width: 12px; height: 12px; cursor: nw-resize}" +
+  "#%prefix%-resize-se {bottom: -3px; right: -3px; width: 12px; height: 12px; cursor: se-resize}" +
+  "#%prefix%-resize-sw {bottom: -3px; left: -3px; width: 12px; height: 12px; cursor: sw-resize}";
 
 /**
  * Mobile user agent detection regex.

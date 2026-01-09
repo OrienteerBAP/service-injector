@@ -8,10 +8,10 @@
 ┌─────────────────────────────────────┐
 │  Client's Website                   │
 │                                     │
-│  ┌─────────┐                        │
-│  │ Your    │  ← Floating tab        │
-│  │ Service │    (click to open)     │
-│  └─────────┘                        │
+│─────────┐                           │
+│ Your    │  ← Floating tab           │
+│ Service │    (click to open)        │
+│─────────┘                           │
 │                                     │
 └─────────────────────────────────────┘
 

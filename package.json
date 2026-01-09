@@ -1,6 +1,6 @@
 {
   "name": "service-injector",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Lightweight library for SaaS providers to embed services on client websites as a floating tab/window with iframe integration",
   "author": "OrienteerBAP",
   "license": "Apache-2.0",
