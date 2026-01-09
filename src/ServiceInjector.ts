@@ -234,6 +234,7 @@ export class ServiceInjector {
 
   /**
    * Apply a margin to the body element on a specific side.
+   * In wrapper mode, also adjusts the main container.
    * @param side - Which side to apply margin to
    * @param size - The margin size (e.g., '440px')
    */
@@ -258,12 +259,23 @@ export class ServiceInjector {
         body.style.marginBottom = size;
         break;
     }
+
+    // Also adjust main container in wrapper mode
+    if (this.config.wm) {
+      this.applyMainContainerMargin(side, size);
+    }
   }
 
   /**
    * Restore body margins to their original values.
+   * In wrapper mode, also restores the main container to fullscreen.
    */
   private restoreBodyMargins(): void {
+    // Restore main container in wrapper mode
+    if (this.config.wm) {
+      this.restoreMainContainer();
+    }
+
     if (!this.state.originalBodyMargin) return;
 
     const body = document.body;
@@ -284,6 +296,58 @@ export class ServiceInjector {
     }, duration);
 
     this.state.originalBodyMargin = null;
+  }
+
+  /**
+   * Adjust main container position/size for docking (wrapper mode only).
+   * @param side - Which side the window is docked to
+   * @param size - The size of the docked window (e.g., '440px')
+   */
+  private applyMainContainerMargin(side: DockSide, size: string): void {
+    const container = this.state.mainContainer;
+    if (!container) return;
+
+    const duration = this.config.a;
+    container.style.transition = `all ${duration}ms ease-in-out`;
+
+    switch (side) {
+      case 'left':
+        container.style.left = size;
+        container.style.width = `calc(100% - ${size})`;
+        break;
+      case 'right':
+        container.style.left = '0';
+        container.style.width = `calc(100% - ${size})`;
+        break;
+      case 'top':
+        container.style.top = size;
+        container.style.height = `calc(100% - ${size})`;
+        break;
+      case 'bottom':
+        container.style.top = '0';
+        container.style.height = `calc(100% - ${size})`;
+        break;
+    }
+  }
+
+  /**
+   * Restore main container to fullscreen (wrapper mode only).
+   */
+  private restoreMainContainer(): void {
+    const container = this.state.mainContainer;
+    if (!container) return;
+
+    const duration = this.config.a;
+    container.style.transition = `all ${duration}ms ease-in-out`;
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.width = '100%';
+    container.style.height = '100%';
+
+    // Clear transition after animation completes
+    setTimeout(() => {
+      container.style.transition = '';
+    }, duration);
   }
 
   /**
