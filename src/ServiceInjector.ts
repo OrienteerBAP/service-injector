@@ -632,6 +632,9 @@ export class ServiceInjector {
           if (this.state.iframe) {
             this.state.iframe.style.pointerEvents = 'none';
           }
+          if (this.state.mainIframe) {
+            this.state.mainIframe.style.pointerEvents = 'none';
+          }
           e.stopPropagation();
           e.preventDefault();
         };
@@ -676,6 +679,9 @@ export class ServiceInjector {
             
             if (this.state.iframe) {
               this.state.iframe.style.pointerEvents = 'none';
+            }
+            if (this.state.mainIframe) {
+              this.state.mainIframe.style.pointerEvents = 'none';
             }
             e.stopPropagation();
             e.preventDefault();
@@ -753,6 +759,9 @@ export class ServiceInjector {
 
         if (this.state.iframe) {
           this.state.iframe.style.pointerEvents = '';
+        }
+        if (this.state.mainIframe) {
+          this.state.mainIframe.style.pointerEvents = '';
         }
 
         // Check for dock zone on drag end (not when resizing)
