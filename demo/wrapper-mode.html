@@ -215,21 +215,37 @@
     </div>
   </div>
 
-  <!-- Service Injector in Wrapper Mode -->
-  <script 
-    id="service-injector" 
-    src="../dist/index.iife.js"
-    data-wrapper-mode="true"
-    data-wrapper-url="https://en.wikipedia.org/wiki/OpenStreetMap"
-    data-url="https://www.openstreetmap.org/export/embed.html?bbox=-0.15%2C51.49%2C-0.08%2C51.52&layer=mapnik"
-    data-position="right"
-    data-offset="50%"
-    data-window-width="400px"
-    data-window-height="350px"
-    data-dockable="true"
-  ></script>
-
   <script>
+    // Determine script URL based on environment (local vs deployed)
+    function getScriptUrl() {
+      var isLocal = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.protocol === 'file:';
+      
+      if (isLocal) {
+        return '../dist/index.iife.js';
+      } else {
+        // Use CDN for deployed demo
+        return 'https://unpkg.com/service-injector/dist/index.iife.js';
+      }
+    }
+
+    // Create and inject the service-injector script
+    (function() {
+      var script = document.createElement('script');
+      script.id = 'service-injector';
+      script.src = getScriptUrl();
+      script.setAttribute('data-wrapper-mode', 'true');
+      script.setAttribute('data-wrapper-url', 'https://en.wikipedia.org/wiki/OpenStreetMap');
+      script.setAttribute('data-url', 'https://www.openstreetmap.org/export/embed.html?bbox=-0.15%2C51.49%2C-0.08%2C51.52&layer=mapnik');
+      script.setAttribute('data-position', 'right');
+      script.setAttribute('data-offset', '50%');
+      script.setAttribute('data-window-width', '400px');
+      script.setAttribute('data-window-height', '350px');
+      script.setAttribute('data-dockable', 'true');
+      document.body.appendChild(script);
+    })();
+
     // Panel minimize/expand toggle
     function togglePanel() {
       var panel = document.getElementById('controlPanel');
