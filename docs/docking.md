@@ -88,7 +88,7 @@ new ServiceInjector({ dockable: ['right'] }); // Right side only
 ### Docking a Window
 
 1. **Drag the window** by its header toward any screen edge
-2. **Get close to the edge** (within 20 pixels)
+2. **When the window's edge** gets close to the viewport edge (within 20 pixels), a **dock preview** appears showing where the window will dock
 3. **Release** - the window snaps to that edge
 
 When docked:
@@ -96,12 +96,21 @@ When docked:
 - Page content (`document.body`) receives a margin to make room
 - The transition is animated (uses your `animation` duration setting)
 
+### Collapsing a Docked Window
+
+When you close (collapse) a docked window:
+- The window hides and the tab reappears
+- Body margins are temporarily restored (page content returns to normal)
+- **The docked state is preserved** - when you expand the window again, it returns to its docked position with body margins re-applied
+
 ### Undocking a Window
 
 Two ways to undock:
 
 1. **Double-click the header** - Window returns to its pre-dock position
-2. **Drag the header away** - Window becomes floating again, follows your cursor
+2. **Drag the header away** (more than 5 pixels) - Window becomes floating again, follows your cursor
+
+**Note:** Simple clicks on the header won't undock - you must actually drag to prevent accidental undocking.
 
 ### Resizing When Docked
 
@@ -172,7 +181,11 @@ myUndock();
 
 ### Dock Threshold
 
-The dock zone is **20 pixels** from each screen edge. When the center of the window header enters this zone during drag, releasing will trigger docking.
+The dock zone is **20 pixels** from each screen edge. Docking triggers when the **window's edge** (not the cursor) enters this zone during drag. A visual preview (semi-transparent overlay with dashed border) shows where the window will dock.
+
+### Undock Threshold
+
+To prevent accidental undocking, you must drag at least **5 pixels** before a docked window will undock. Simple clicks on the header won't trigger undocking.
 
 ### Body Margin
 

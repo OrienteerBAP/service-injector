@@ -987,6 +987,8 @@ export class ServiceInjector {
 
   /**
    * Expand (open) the window.
+   * If the window was previously docked, it will be restored to its docked
+   * position with body margins re-applied.
    * @returns false to prevent default link behavior, true if opened externally
    */
   expand(): boolean {
@@ -1015,6 +1017,15 @@ export class ServiceInjector {
         if (this.state.win) {
           this.state.win.style.display = 'block';
         }
+        // Re-apply body margin if window is docked
+        if (this.state.docked && this.state.win) {
+          const side = this.state.docked;
+          const size = (side === 'left' || side === 'right')
+            ? this.state.win.offsetWidth + 'px'
+            : this.state.win.offsetHeight + 'px';
+          this.saveBodyMargins();
+          this.applyBodyMargin(side, size);
+        }
         this.adjustSizes();
         this.savePositions();
       }
@@ -1025,6 +1036,8 @@ export class ServiceInjector {
 
   /**
    * Collapse (close) the window.
+   * If the window is docked, body margins are temporarily restored but the
+   * docked state is preserved so expand() can restore the docked position.
    * @returns false to prevent default link behavior
    */
   collapse(): boolean {
@@ -1034,6 +1047,11 @@ export class ServiceInjector {
       delta: reverseDelta,
       onStart: () => {
         this.savePositions();
+        // Temporarily restore body margins when hiding docked window
+        // (docked state is preserved for re-expansion)
+        if (this.state.docked) {
+          this.restoreBodyMargins();
+        }
         if (this.state.win) {
           this.state.win.style.display = 'none';
         }
