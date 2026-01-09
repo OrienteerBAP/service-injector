@@ -162,6 +162,10 @@ export interface InjectorState {
   undocking: boolean;
   /** Current resize direction when resizing from edges/corners */
   resizeDirection: ResizeDirection | null;
+  /** Dock preview element shown when dragging near edges */
+  dockPreview: HTMLElement | null;
+  /** Current dock preview side being shown (if any) */
+  dockPreviewSide: DockSide | null;
 }
 
 /**

@@ -130,7 +130,9 @@ export class ServiceInjector {
       preDockPosition: null,
       originalBodyMargin: null,
       undocking: false,
-      resizeDirection: null
+      resizeDirection: null,
+      dockPreview: null,
+      dockPreviewSide: null
     };
   }
 
@@ -172,31 +174,40 @@ export class ServiceInjector {
   }
 
   /**
-   * Detect which dock zone (if any) a point is within.
-   * @param x - X coordinate (viewport)
-   * @param y - Y coordinate (viewport)
-   * @returns The dock side if within threshold, or null if not in any dock zone
+   * Detect which dock zone (if any) the window edge is within.
+   * Uses the window's edge position (not cursor position) to determine docking.
+   * @returns The dock side if window edge is within threshold, or null if not in any dock zone
    */
-  private detectDockZone(x: number, y: number): DockSide | null {
+  private detectDockZone(): DockSide | null {
     if (!this.canDock()) {
       return null;
     }
+
+    const win = this.state.win;
+    if (!win) return null;
 
     const allowed = this.getAllowedDockSides();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
+    // Get window edges
+    const winLeft = win.offsetLeft;
+    const winTop = win.offsetTop;
+    const winRight = winLeft + win.offsetWidth;
+    const winBottom = winTop + win.offsetHeight;
+
     // Check each edge - priority: left, right, top, bottom
-    if (allowed.includes('left') && x <= DOCK_THRESHOLD) {
+    // Dock triggers when the window's corresponding edge is near the viewport edge
+    if (allowed.includes('left') && winLeft <= DOCK_THRESHOLD) {
       return 'left';
     }
-    if (allowed.includes('right') && x >= vw - DOCK_THRESHOLD) {
+    if (allowed.includes('right') && winRight >= vw - DOCK_THRESHOLD) {
       return 'right';
     }
-    if (allowed.includes('top') && y <= DOCK_THRESHOLD) {
+    if (allowed.includes('top') && winTop <= DOCK_THRESHOLD) {
       return 'top';
     }
-    if (allowed.includes('bottom') && y >= vh - DOCK_THRESHOLD) {
+    if (allowed.includes('bottom') && winBottom >= vh - DOCK_THRESHOLD) {
       return 'bottom';
     }
 
@@ -269,6 +280,74 @@ export class ServiceInjector {
     }, duration);
 
     this.state.originalBodyMargin = null;
+  }
+
+  /**
+   * Show dock preview overlay for a specific side.
+   * @param side - The side to show the preview for
+   */
+  private showDockPreview(side: DockSide): void {
+    const preview = this.state.dockPreview;
+    if (!preview) return;
+
+    // Don't show if already showing this side
+    if (this.state.dockPreviewSide === side) return;
+
+    const win = this.state.win;
+    if (!win) return;
+
+    // Position preview based on dock side
+    // The preview shows where the window will dock (full height/width on that edge)
+    const winWidth = win.offsetWidth;
+    const winHeight = win.offsetHeight;
+
+    preview.style.top = '';
+    preview.style.bottom = '';
+    preview.style.left = '';
+    preview.style.right = '';
+    preview.style.width = '';
+    preview.style.height = '';
+
+    switch (side) {
+      case 'left':
+        preview.style.top = '0';
+        preview.style.left = '0';
+        preview.style.width = winWidth + 'px';
+        preview.style.height = '100vh';
+        break;
+      case 'right':
+        preview.style.top = '0';
+        preview.style.right = '0';
+        preview.style.width = winWidth + 'px';
+        preview.style.height = '100vh';
+        break;
+      case 'top':
+        preview.style.top = '0';
+        preview.style.left = '0';
+        preview.style.width = '100vw';
+        preview.style.height = winHeight + 'px';
+        break;
+      case 'bottom':
+        preview.style.bottom = '0';
+        preview.style.left = '0';
+        preview.style.width = '100vw';
+        preview.style.height = winHeight + 'px';
+        break;
+    }
+
+    preview.style.display = 'block';
+    this.state.dockPreviewSide = side;
+  }
+
+  /**
+   * Hide the dock preview overlay.
+   */
+  private hideDockPreview(): void {
+    const preview = this.state.dockPreview;
+    if (preview) {
+      preview.style.display = 'none';
+    }
+    this.state.dockPreviewSide = null;
   }
 
   /**
@@ -384,6 +463,14 @@ export class ServiceInjector {
     shadowElm.style.zIndex = '99997';
     rootElm.appendChild(shadowElm);
     this.state.shadow = shadowElm;
+
+    // Create dock preview element (shown when dragging near edges)
+    const dockPreviewElm = createElement('div', { id: this.sp('%prefix%-dock-preview') });
+    dockPreviewElm.style.position = 'fixed';
+    dockPreviewElm.style.display = 'none';
+    dockPreviewElm.style.zIndex = '99996';
+    rootElm.appendChild(dockPreviewElm);
+    this.state.dockPreview = dockPreviewElm;
 
     // Create tab element
     const tabElm = createElement('div', { id: this.sp('%prefix%-tab') });
@@ -578,6 +665,16 @@ export class ServiceInjector {
           this.state.winPosition.left = drag.x - drag.left;
           this.state.winPosition.top = drag.y - drag.top;
           this.restorePosition(this.state.win!, this.state.winPosition);
+
+          // Show/hide dock preview based on window edge position
+          if (!this.state.docked) {
+            const dockSide = this.detectDockZone();
+            if (dockSide) {
+              this.showDockPreview(dockSide);
+            } else {
+              this.hideDockPreview();
+            }
+          }
         }
 
         if (this.state.resize && this.state.resizeDirection) {
@@ -609,11 +706,14 @@ export class ServiceInjector {
 
         // Check for dock zone on drag end (not when resizing)
         if (wasDragging && !this.state.docked) {
-          const dockSide = this.detectDockZone(drag.x, drag.y);
+          const dockSide = this.detectDockZone();
           if (dockSide) {
             this.dock(dockSide);
           }
         }
+
+        // Hide dock preview
+        this.hideDockPreview();
 
         this.savePositions();
         e.stopPropagation();

@@ -139,6 +139,8 @@ export const DEFAULT_STYLES =
   "#%prefix%-body {border: 1px solid #aaa; flex: 1; overflow: hidden}" +
   "#%prefix%-iframe {border: 0; width: 100%; height: 100%}" +
   "#%prefix%-shadow {background: grey; z-index: 99999}" +
+  // Dock preview overlay - shows where window will dock
+  "#%prefix%-dock-preview {background: rgba(0, 120, 215, 0.2); border: 2px dashed rgba(0, 120, 215, 0.6); box-sizing: border-box}" +
   // Edge resize zones - positioned along each edge
   ".%prefix%-resize-edge, .%prefix%-resize-corner {position: absolute; z-index: 100000}" +
   "#%prefix%-resize-n {top: -3px; left: 6px; right: 6px; height: 6px; cursor: n-resize}" +
